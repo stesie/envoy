@@ -78,13 +78,29 @@ cc_binary(
     ],
 )
 
+genrule(
+    name = "envoy-version",
+    srcs = glob([
+        ".git/**/*",
+    ]),
+    tools = [
+        "tools/gen_git_sha.sh",
+    ],
+    outs = [
+        "source/common/version_generated.cc",
+    ],
+    cmd = "touch $@ && $(location tools/gen_git_sha.sh) . $@",
+)
+
 cc_library(
     name = "envoy-common",
     srcs = glob([
         "source/**/*.cc",
         "source/**/*.h",
         "include/**/*.h",
-    ], exclude=["source/exe/main.cc"]),
+    ], exclude=["source/exe/main.cc"]) + [
+        "source/common/version_generated.cc",
+    ],
     copts = [
         "-I./include",
         "-I./source",
@@ -101,6 +117,7 @@ cc_library(
     alwayslink=1,
     deps = [
         ":envoy-ratelimit-pb",
+        # TODO: make boringssl compatible
 #        "//external:boringssl_ssl",
 #        "//external:boringssl_crypto",
         "//external:nghttp2",
