@@ -99,6 +99,7 @@ private:
 
   TcpProxyConfigPtr config_;
   Upstream::ClusterManager& cluster_manager_;
+  Upstream::ClusterInfoPtr cluster_;
   Network::ReadFilterCallbacks* read_callbacks_{};
   Network::ClientConnectionPtr upstream_connection_;
   DownstreamCallbacks downstream_callbacks_;

@@ -83,7 +83,7 @@ struct DetectionStats {
  */
 class DetectorImpl : public Detector {
 public:
-  DetectorImpl(Cluster& cluster, Event::Dispatcher& dispatcher, Runtime::Loader& runtime,
+  DetectorImpl(const Cluster& cluster, Event::Dispatcher& dispatcher, Runtime::Loader& runtime,
                Stats::Store& stats, SystemTimeSource& time_source, EventLoggerPtr event_logger);
 
   void onConsecutive5xx(HostPtr host);

@@ -19,7 +19,7 @@ namespace Upstream {
 Outlier::DetectorHostSinkNullImpl HostDescriptionImpl::null_outlier_detector_;
 
 Host::CreateConnectionData HostImpl::createConnection(Event::Dispatcher& dispatcher) const {
-  return {createConnection(dispatcher, cluster_, url_), shared_from_this()};
+  return {createConnection(dispatcher, *cluster_, url_), shared_from_this()};
 }
 
 Network::ClientConnectionPtr HostImpl::createConnection(Event::Dispatcher& dispatcher,
@@ -298,8 +298,6 @@ StrictDnsClusterImpl::StrictDnsClusterImpl(const Json::Object& config, Runtime::
     resolve_targets_.emplace_back(new ResolveTarget(*this, host->getString("url")));
   }
 }
-
-StrictDnsClusterImpl::~StrictDnsClusterImpl() {}
 
 void StrictDnsClusterImpl::updateAllHosts(const std::vector<HostPtr>& hosts_added,
                                           const std::vector<HostPtr>& hosts_removed) {

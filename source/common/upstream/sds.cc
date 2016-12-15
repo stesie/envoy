@@ -63,7 +63,8 @@ void SdsClusterImpl::parseSdsResponse(Http::Message& response) {
     }
 
     new_hosts.emplace_back(new HostImpl(
-        *this, Network::Utility::urlForTcp(host->getString("ip_address"), host->getInteger("port")),
+        shared_from_this(),
+        Network::Utility::urlForTcp(host->getString("ip_address"), host->getInteger("port")),
         canary, weight, zone));
   }
 
@@ -150,6 +151,7 @@ void SdsClusterImpl::shutdown() {
   }
 
   refresh_timer_.reset();
+  ClusterImplBase::shutdown();
 }
 
 } // Upstream

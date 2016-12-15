@@ -156,10 +156,11 @@ void ClusterManagerImpl::loadCluster(const Json::Object& cluster, Stats::Store& 
   primary_clusters_.emplace(new_cluster->name(), new_cluster);
 }
 
-const Cluster* ClusterManagerImpl::get(const std::string& cluster) {
+ConstClusterPtr ClusterManagerImpl::get(const std::string& cluster) {
+  // fixfix: cross thread.
   auto entry = primary_clusters_.find(cluster);
   if (entry != primary_clusters_.end()) {
-    return entry->second.get();
+    return entry->second;
   } else {
     return nullptr;
   }
@@ -212,7 +213,7 @@ Host::CreateConnectionData ClusterManagerImpl::tcpConnForCluster(const std::stri
   if (logical_host) {
     return logical_host->createConnection(cluster_manager.dispatcher_);
   } else {
-    entry->second->primary_cluster_.stats().upstream_cx_none_healthy_.inc();
+    entry->second->primary_cluster_->stats().upstream_cx_none_healthy_.inc();
     return {nullptr, nullptr};
   }
 }
@@ -235,9 +236,10 @@ ClusterManagerImpl::ThreadLocalClusterManagerImpl::ThreadLocalClusterManagerImpl
     : parent_(parent), dispatcher_(dispatcher) {
   // If local cluster is defined then we need to initialize it first.
   if (local_cluster_name.valid()) {
+    // FIXFIX: Can't access primary_clusters_ from here.
     auto& local_cluster = parent.primary_clusters_[local_cluster_name.value()];
     thread_local_clusters_[local_cluster_name.value()].reset(
-        new ClusterEntry(*this, *local_cluster, runtime, random, parent.stats_, dispatcher,
+        new ClusterEntry(*this, local_cluster, runtime, random, parent.stats_, dispatcher,
                          local_zone_name, local_address, nullptr));
   }
 
@@ -252,7 +254,7 @@ ClusterManagerImpl::ThreadLocalClusterManagerImpl::ThreadLocalClusterManagerImpl
     }
 
     thread_local_clusters_[cluster.first].reset(
-        new ClusterEntry(*this, *cluster.second, runtime, random, parent.stats_, dispatcher,
+        new ClusterEntry(*this, cluster.second, runtime, random, parent.stats_, dispatcher,
                          local_zone_name, local_address, local_host_set));
   }
 
@@ -318,28 +320,28 @@ void ClusterManagerImpl::ThreadLocalClusterManagerImpl::shutdown() {
 }
 
 ClusterManagerImpl::ThreadLocalClusterManagerImpl::ClusterEntry::ClusterEntry(
-    ThreadLocalClusterManagerImpl& parent, const Cluster& cluster, Runtime::Loader& runtime,
+    ThreadLocalClusterManagerImpl& parent, ConstClusterPtr cluster, Runtime::Loader& runtime,
     Runtime::RandomGenerator& random, Stats::Store& stats_store, Event::Dispatcher& dispatcher,
     const std::string& local_zone_name, const std::string& local_address,
     const HostSet* local_host_set)
     : parent_(parent), primary_cluster_(cluster),
       http_async_client_(
-          cluster, stats_store, dispatcher, local_zone_name, parent.parent_, runtime, random,
+          *cluster, stats_store, dispatcher, local_zone_name, parent.parent_, runtime, random,
           Router::ShadowWriterPtr{new Router::ShadowWriterImpl(parent.parent_)}, local_address) {
 
-  switch (cluster.lbType()) {
+  switch (cluster->lbType()) {
   case LoadBalancerType::LeastRequest: {
     lb_.reset(
-        new LeastRequestLoadBalancer(host_set_, local_host_set, cluster.stats(), runtime, random));
+        new LeastRequestLoadBalancer(host_set_, local_host_set, cluster->stats(), runtime, random));
     break;
   }
   case LoadBalancerType::Random: {
-    lb_.reset(new RandomLoadBalancer(host_set_, local_host_set, cluster.stats(), runtime, random));
+    lb_.reset(new RandomLoadBalancer(host_set_, local_host_set, cluster->stats(), runtime, random));
     break;
   }
   case LoadBalancerType::RoundRobin: {
     lb_.reset(
-        new RoundRobinLoadBalancer(host_set_, local_host_set, cluster.stats(), runtime, random));
+        new RoundRobinLoadBalancer(host_set_, local_host_set, cluster->stats(), runtime, random));
     break;
   }
   }
@@ -350,7 +352,7 @@ ClusterManagerImpl::ThreadLocalClusterManagerImpl::ClusterEntry::connPool(
     ResourcePriority priority) {
   ConstHostPtr host = lb_->chooseHost();
   if (!host) {
-    primary_cluster_.stats().upstream_cx_none_healthy_.inc();
+    primary_cluster_->stats().upstream_cx_none_healthy_.inc();
     return nullptr;
   }
 

@@ -37,7 +37,7 @@ public:
    */
   void initialize() { refreshHosts(); }
 
-  // Upstream::Cluster
+  // Upstream::ClusterImplBase
   void shutdown() override;
 
 private:

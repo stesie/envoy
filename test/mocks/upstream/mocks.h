@@ -15,6 +15,12 @@ using testing::NiceMock;
 
 namespace Upstream {
 
+class MockClusterInfo : public ClusterInfo {
+public:
+  MockClusterInfo();
+  ~MockClusterInfo();
+};
+
 class MockCluster : public Cluster {
 public:
   MockCluster();
@@ -38,6 +44,7 @@ public:
   MOCK_CONST_METHOD0(connectTimeout, std::chrono::milliseconds());
   MOCK_CONST_METHOD0(features, uint64_t());
   MOCK_CONST_METHOD0(httpCodecOptions, uint64_t());
+  MOCK_CONST_METHOD0(info, const ClusterInfo&());
   MOCK_METHOD1(setInitializedCb, void(std::function<void()>));
   MOCK_CONST_METHOD0(sslContext, Ssl::ClientContext*());
   MOCK_CONST_METHOD0(lbType, LoadBalancerType());
@@ -77,7 +84,7 @@ public:
   // Upstream::ClusterManager
   MOCK_METHOD1(setInitializedCb, void(std::function<void()>));
   MOCK_METHOD0(clusters, std::unordered_map<std::string, ConstClusterPtr>());
-  MOCK_METHOD1(get, const Cluster*(const std::string& cluster));
+  MOCK_METHOD1(get, ClusterInfoPtr(const std::string& cluster));
   MOCK_METHOD2(httpConnPoolForCluster, Http::ConnectionPool::Instance*(const std::string& cluster,
                                                                        ResourcePriority priority));
   MOCK_METHOD1(tcpConnForCluster_, MockHost::MockCreateConnectionData(const std::string& cluster));
