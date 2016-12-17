@@ -11,7 +11,7 @@ genrule(
     ],
     cmd = ' '.join([
         "$(location configure) --enable-shared=no --disable-libevent-regress",
-        "CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib OPENSSL_LIBADD=-ldl",
+        "CPPFLAGS=-I/usr/local/include LDFLAGS=-L/usr/local/lib",
         "&& cp config.h $@",
     ]),
 )
@@ -32,7 +32,6 @@ event_srcs = [
     "buffer.c",
     "bufferevent.c",
     "bufferevent_filter.c",
-    "bufferevent_openssl.c",
     "bufferevent_pair.c",
     "bufferevent_ratelim.c",
     "bufferevent_sock.c",
@@ -91,9 +90,6 @@ cc_library(
         "-w",
         "-DHAVE_CONFIG_H",
     ],
-    defines = [
-        "_EVENT_HAVE_OPENSSL",
-    ],
     visibility = ["//visibility:public"],
 )
 
@@ -117,5 +113,3 @@ cc_library(
     ],
     visibility = ["//visibility:public"],
 )
-
-

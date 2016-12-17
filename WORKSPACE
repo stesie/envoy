@@ -101,25 +101,16 @@ bind(
     actual = "@http_parser_git//:http_parser",
 )
 
-"""
 new_git_repository(
-    name = "jansson_git",
-    remote = "https://github.com/akheron/jansson.git",
-    commit = "ee27b7e3ddf6853a698af163c8e0627fa295091b",
-    build_file = "third_party/BUILD.jansson",
-)
-"""
-
-new_http_archive(
-    name = "jansson_git",
-    url = "http://www.digip.org/jansson/releases/jansson-2.7.tar.gz",
-    strip_prefix = "jansson-2.7",
-    build_file = "third_party/BUILD.jansson",
+    name = "rapidjson_git",
+    remote = "https://github.com/miloyip/rapidjson.git",
+    commit = "f54b0e47a08782a6131cc3d60f94d038fa6e0a51",
+    build_file = "third_party/BUILD.rapidjson",
 )
 
 bind(
-    name = "jansson",
-    actual = "@jansson_git//:jansson",
+    name = "rapidjson",
+    actual = "@rapidjson_git//:rapidjson",
 )
 
 new_http_archive(
@@ -146,10 +137,11 @@ bind(
     actual = "@googletest_git//:gtest",
 )
 
-git_repository(
+new_git_repository(
     name = "boringssl",
-    commit = "efaf893bf5f6ce2c663e15b617fcef613ef5d081",
+    commit = "ad39e21b66adf50f1783d252affcd82dd9d0d515",
     remote = "https://boringssl.googlesource.com/boringssl",
+    build_file = "third_party/BUILD.boringssl",
 )
 
 bind(

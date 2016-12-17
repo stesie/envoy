@@ -107,8 +107,6 @@ cc_library(
         "-include source/precompiled/precompiled.h",
     ],
     linkopts = [
-        "-lcrypto",
-        "-lssl",
         "-lpthread",
         "-lanl",
         "-lrt",
@@ -117,9 +115,9 @@ cc_library(
     alwayslink=1,
     deps = [
         ":envoy-ratelimit-pb",
-        # TODO: make boringssl compatible
-#        "//external:boringssl_ssl",
-#        "//external:boringssl_crypto",
+        "//external:boringssl_ssl",
+        "//external:boringssl_crypto",
+        "@boringssl//:bio_deprecit",
         "//external:nghttp2",
         "//external:spdlog",
         "//external:tclap",
@@ -127,7 +125,7 @@ cc_library(
         "//external:event",
         "//external:protobuf",
         "//external:http_parser",
-        "//external:jansson",
+        "//external:rapidjson",
         "//external:event_pthreads",
     ],
 )
