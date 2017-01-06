@@ -33,7 +33,7 @@ AsyncClientImpl::~AsyncClientImpl() {
 AsyncClient::Request* AsyncClientImpl::send(MessagePtr&& request, AsyncClient::Callbacks& callbacks,
                                             const Optional<std::chrono::milliseconds>& timeout) {
   std::unique_ptr<AsyncStreamingRequestImpl> new_request{
-      new AsyncStreamingRequestImpl(std::move(request), *this, callbacks, timeout)};
+      new AsyncRequestImpl(std::move(request), *this, callbacks, timeout)};
 
   // The request may get immediately failed. If so, we will return nullptr.
   if (!new_request->complete_) {
@@ -140,5 +140,14 @@ void AsyncStreamingRequestImpl::failDueToClientDestroy() {
   callbacks_.onFailure(AsyncClient::FailureReason::Reset);
   cleanup();
 }
+
+AsyncRequestImpl::AsyncRequestImpl(MessagePtr &&request,
+                                   AsyncClientImpl &parent,
+                                   AsyncClient::Callbacks &callbacks,
+                                   const Optional<std::chrono::milliseconds> &timeout)
+    : AsyncStreamingRequestImpl(std::move(request), parent, callbacks, timeout) {
+}
+
+AsyncRequestImpl::~AsyncRequestImpl() {}
 
 } // Http

@@ -55,7 +55,7 @@ public:
   AsyncStreamingRequestImpl(MessagePtr&& request, AsyncClientImpl& parent,
                             AsyncClient::Callbacks& callbacks,
                             const Optional<std::chrono::milliseconds>& timeout);
-  ~AsyncStreamingRequestImpl();
+  virtual ~AsyncStreamingRequestImpl();
 
   // Http::AsyncHttpRequest
   void cancel() override;
@@ -165,6 +165,17 @@ private:
   bool complete_{};
 
   friend class AsyncClientImpl;
+};
+
+class AsyncRequestImpl final : public AsyncStreamingRequestImpl {
+ public:
+  AsyncRequestImpl(MessagePtr&& request, AsyncClientImpl& parent,
+      AsyncClient::Callbacks& callbacks, const Optional<std::chrono::milliseconds>& timeout);
+  virtual ~AsyncRequestImpl();
+
+ private:
+  friend class AsyncClientImpl;
+
 };
 
 } // Http
