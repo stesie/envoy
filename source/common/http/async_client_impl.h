@@ -18,7 +18,7 @@
 
 namespace Http {
 
-class AsyncRequestImpl;
+class AsyncStreamingRequestImpl;
 
 class AsyncClientImpl final : public AsyncClient {
 public:
@@ -36,24 +36,26 @@ private:
   const Upstream::ClusterInfo& cluster_;
   Router::FilterConfig config_;
   Event::Dispatcher& dispatcher_;
-  std::list<std::unique_ptr<AsyncRequestImpl>> active_requests_;
+  std::list<std::unique_ptr<AsyncStreamingRequestImpl>> active_requests_;
+  const std::string local_address_;
 
-  friend class AsyncRequestImpl;
+  friend class AsyncStreamingRequestImpl;
 };
 
 /**
  * Implementation of AsyncRequest. This implementation is capable of sending HTTP requests to a
  * ConnectionPool asynchronously.
  */
-class AsyncRequestImpl final : public AsyncClient::Request,
-                               StreamDecoderFilterCallbacks,
-                               Router::StableRouteTable,
-                               Logger::Loggable<Logger::Id::http>,
-                               LinkedObject<AsyncRequestImpl> {
+class AsyncStreamingRequestImpl : public AsyncClient::Request,
+                                  StreamDecoderFilterCallbacks,
+                                  Router::StableRouteTable,
+                                  Logger::Loggable<Logger::Id::http>,
+                                  LinkedObject<AsyncStreamingRequestImpl> {
 public:
-  AsyncRequestImpl(MessagePtr&& request, AsyncClientImpl& parent, AsyncClient::Callbacks& callbacks,
-                   const Optional<std::chrono::milliseconds>& timeout);
-  ~AsyncRequestImpl();
+  AsyncStreamingRequestImpl(MessagePtr&& request, AsyncClientImpl& parent,
+                            AsyncClient::Callbacks& callbacks,
+                            const Optional<std::chrono::milliseconds>& timeout);
+  ~AsyncStreamingRequestImpl();
 
   // Http::AsyncHttpRequest
   void cancel() override;

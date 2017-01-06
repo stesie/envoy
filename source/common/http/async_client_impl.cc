@@ -4,11 +4,15 @@
 namespace Http {
 
 const std::vector<std::reference_wrapper<const Router::RateLimitPolicyEntry>>
-    AsyncRequestImpl::NullRateLimitPolicy::rate_limit_policy_entry_;
-const AsyncRequestImpl::NullRateLimitPolicy AsyncRequestImpl::RouteEntryImpl::rate_limit_policy_;
-const AsyncRequestImpl::NullRetryPolicy AsyncRequestImpl::RouteEntryImpl::retry_policy_;
-const AsyncRequestImpl::NullShadowPolicy AsyncRequestImpl::RouteEntryImpl::shadow_policy_;
-const AsyncRequestImpl::NullVirtualHost AsyncRequestImpl::RouteEntryImpl::virtual_host_;
+    AsyncStreamingRequestImpl::NullRateLimitPolicy::rate_limit_policy_entry_;
+const AsyncStreamingRequestImpl::NullRateLimitPolicy
+    AsyncStreamingRequestImpl::RouteEntryImpl::rate_limit_policy_;
+const AsyncStreamingRequestImpl::NullRetryPolicy
+    AsyncStreamingRequestImpl::RouteEntryImpl::retry_policy_;
+const AsyncStreamingRequestImpl::NullShadowPolicy
+    AsyncStreamingRequestImpl::RouteEntryImpl::shadow_policy_;
+const AsyncStreamingRequestImpl::NullVirtualHost
+    AsyncStreamingRequestImpl::RouteEntryImpl::virtual_host_;
 
 AsyncClientImpl::AsyncClientImpl(const Upstream::ClusterInfo& cluster, Stats::Store& stats_store,
                                  Event::Dispatcher& dispatcher,
@@ -28,8 +32,8 @@ AsyncClientImpl::~AsyncClientImpl() {
 
 AsyncClient::Request* AsyncClientImpl::send(MessagePtr&& request, AsyncClient::Callbacks& callbacks,
                                             const Optional<std::chrono::milliseconds>& timeout) {
-  std::unique_ptr<AsyncRequestImpl> new_request{
-      new AsyncRequestImpl(std::move(request), *this, callbacks, timeout)};
+  std::unique_ptr<AsyncStreamingRequestImpl> new_request{
+      new AsyncStreamingRequestImpl(std::move(request), *this, callbacks, timeout)};
 
   // The request may get immediately failed. If so, we will return nullptr.
   if (!new_request->complete_) {
@@ -40,9 +44,9 @@ AsyncClient::Request* AsyncClientImpl::send(MessagePtr&& request, AsyncClient::C
   }
 }
 
-AsyncRequestImpl::AsyncRequestImpl(MessagePtr&& request, AsyncClientImpl& parent,
-                                   AsyncClient::Callbacks& callbacks,
-                                   const Optional<std::chrono::milliseconds>& timeout)
+AsyncStreamingRequestImpl::AsyncStreamingRequestImpl(
+    MessagePtr&& request, AsyncClientImpl& parent, AsyncClient::Callbacks& callbacks,
+    const Optional<std::chrono::milliseconds>& timeout)
     : request_(std::move(request)), parent_(parent), callbacks_(callbacks),
       stream_id_(parent.config_.random_.random()), router_(parent.config_),
       request_info_(Protocol::Http11), route_(parent_.cluster_.name(), timeout) {
@@ -60,9 +64,9 @@ AsyncRequestImpl::AsyncRequestImpl(MessagePtr&& request, AsyncClientImpl& parent
   // TODO: Correctly set protocol in request info when we support access logging.
 }
 
-AsyncRequestImpl::~AsyncRequestImpl() { ASSERT(!reset_callback_); }
+AsyncStreamingRequestImpl::~AsyncStreamingRequestImpl() { ASSERT(!reset_callback_); }
 
-void AsyncRequestImpl::encodeHeaders(HeaderMapPtr&& headers, bool end_stream) {
+void AsyncStreamingRequestImpl::encodeHeaders(HeaderMapPtr&& headers, bool end_stream) {
   response_.reset(new ResponseMessageImpl(std::move(headers)));
 #ifndef NDEBUG
   log_debug("async http request response headers (end_stream={}):", end_stream);
@@ -76,7 +80,7 @@ void AsyncRequestImpl::encodeHeaders(HeaderMapPtr&& headers, bool end_stream) {
   }
 }
 
-void AsyncRequestImpl::encodeData(Buffer::Instance& data, bool end_stream) {
+void AsyncStreamingRequestImpl::encodeData(Buffer::Instance& data, bool end_stream) {
   log_trace("async http request response data (length={} end_stream={})", data.length(),
             end_stream);
   if (!response_->body()) {
@@ -89,7 +93,7 @@ void AsyncRequestImpl::encodeData(Buffer::Instance& data, bool end_stream) {
   }
 }
 
-void AsyncRequestImpl::encodeTrailers(HeaderMapPtr&& trailers) {
+void AsyncStreamingRequestImpl::encodeTrailers(HeaderMapPtr&& trailers) {
   response_->trailers(std::move(trailers));
 #ifndef NDEBUG
   log_debug("async http request response trailers:");
@@ -101,18 +105,18 @@ void AsyncRequestImpl::encodeTrailers(HeaderMapPtr&& trailers) {
   onComplete();
 }
 
-void AsyncRequestImpl::cancel() {
+void AsyncStreamingRequestImpl::cancel() {
   reset_callback_();
   cleanup();
 }
 
-void AsyncRequestImpl::onComplete() {
+void AsyncStreamingRequestImpl::onComplete() {
   complete_ = true;
   callbacks_.onSuccess(std::move(response_));
   cleanup();
 }
 
-void AsyncRequestImpl::cleanup() {
+void AsyncStreamingRequestImpl::cleanup() {
   response_.reset();
   reset_callback_ = nullptr;
 
@@ -123,13 +127,13 @@ void AsyncRequestImpl::cleanup() {
   }
 }
 
-void AsyncRequestImpl::resetStream() {
+void AsyncStreamingRequestImpl::resetStream() {
   // In this case we don't have a valid response so we do need to raise a failure.
   callbacks_.onFailure(AsyncClient::FailureReason::Reset);
   cleanup();
 }
 
-void AsyncRequestImpl::failDueToClientDestroy() {
+void AsyncStreamingRequestImpl::failDueToClientDestroy() {
   // In this case we are going away because the client is being destroyed. We need to both reset
   // the stream as well as raise a failure callback.
   reset_callback_();
