@@ -45,9 +45,9 @@ AsyncClient::Request* AsyncClientImpl::send(MessagePtr&& request, AsyncClient::C
 }
 
 AsyncStreamingRequestImpl::AsyncStreamingRequestImpl(
-    AsyncClientImpl& parent, AsyncClient::Callbacks& callbacks,
+    AsyncClientImpl& parent,
     const Optional<std::chrono::milliseconds>& timeout)
-    : parent_(parent), callbacks_(callbacks),
+    : parent_(parent),
       stream_id_(parent.config_.random_.random()), router_(parent.config_),
       request_info_(Protocol::Http11), route_(parent_.cluster_.name(), timeout) {
 
@@ -102,11 +102,6 @@ void AsyncStreamingRequestImpl::cancel() {
   cleanup();
 }
 
-void AsyncStreamingRequestImpl::onComplete() {
-  complete_ = true;
-  callbacks_.onSuccess(std::move(response_));
-  cleanup();
-}
 
 void AsyncStreamingRequestImpl::cleanup() {
   response_.reset();
@@ -119,25 +114,19 @@ void AsyncStreamingRequestImpl::cleanup() {
   }
 }
 
-void AsyncStreamingRequestImpl::resetStream() {
-  // In this case we don't have a valid response so we do need to raise a failure.
-  callbacks_.onFailure(AsyncClient::FailureReason::Reset);
-  cleanup();
-}
-
 void AsyncStreamingRequestImpl::failDueToClientDestroy() {
   // In this case we are going away because the client is being destroyed. We need to both reset
   // the stream as well as raise a failure callback.
   reset_callback_();
-  callbacks_.onFailure(AsyncClient::FailureReason::Reset);
-  cleanup();
+  resetStream();
 }
 
 AsyncRequestImpl::AsyncRequestImpl(MessagePtr &&request,
                                    AsyncClientImpl &parent,
                                    AsyncClient::Callbacks &callbacks,
                                    const Optional<std::chrono::milliseconds> &timeout)
-    : AsyncStreamingRequestImpl(parent, callbacks, timeout), request_(std::move(request)) {
+    : AsyncStreamingRequestImpl(parent, timeout), request_(std::move(request)),
+      callbacks_(callbacks) {
 
   request_->headers().insertEnvoyInternalRequest().value(
       Headers::get().EnvoyInternalRequestValues.True);
@@ -149,5 +138,17 @@ AsyncRequestImpl::AsyncRequestImpl(MessagePtr &&request,
 }
 
 AsyncRequestImpl::~AsyncRequestImpl() {}
+
+void AsyncRequestImpl::resetStream() {
+  // In this case we don't have a valid response so we do need to raise a failure.
+  callbacks_.onFailure(AsyncClient::FailureReason::Reset);
+  cleanup();
+}
+
+void AsyncRequestImpl::onComplete() {
+  complete_ = true;
+  callbacks_.onSuccess(std::move(response_));
+  cleanup();
+}
 
 } // Http

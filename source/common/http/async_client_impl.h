@@ -55,7 +55,6 @@ class AsyncStreamingRequestImpl : public AsyncClient::Request,
                                   LinkedObject<AsyncStreamingRequestImpl> {
 public:
   AsyncStreamingRequestImpl(AsyncClientImpl& parent,
-                            AsyncClient::Callbacks& callbacks,
                             const Optional<std::chrono::milliseconds>& timeout);
   virtual ~AsyncStreamingRequestImpl();
 
@@ -128,7 +127,7 @@ private:
 
   void cleanup();
   void failDueToClientDestroy();
-  void onComplete();
+  virtual void onComplete() PURE;
 
   // Http::StreamDecoderFilterCallbacks
   void addResetStreamCallback(std::function<void()> callback) override {
@@ -136,7 +135,6 @@ private:
   }
   uint64_t connectionId() override { return 0; }
   Event::Dispatcher& dispatcher() override { return parent_.dispatcher_; }
-  void resetStream() override;
   const Router::StableRouteTable& routeTable() { return *this; }
   uint64_t streamId() override { return stream_id_; }
   AccessLog::RequestInfo& requestInfo() override { return request_info_; }
@@ -155,7 +153,6 @@ private:
   }
 
   AsyncClientImpl& parent_;
-  AsyncClient::Callbacks& callbacks_;
   const uint64_t stream_id_;
   std::unique_ptr<MessageImpl> response_;
   Router::ProdFilter router_;
@@ -176,7 +173,10 @@ class AsyncRequestImpl final : public AsyncStreamingRequestImpl {
 
  private:
   const Buffer::Instance* decodingBuffer() override { return request_->body(); }
+  void resetStream() override;
+  void onComplete() override;
   MessagePtr request_;
+  AsyncClient::Callbacks& callbacks_;
   friend class AsyncClientImpl;
 
 };
