@@ -52,49 +52,37 @@ AsyncStreamingRequestImpl::AsyncStreamingRequestImpl(
       request_info_(Protocol::Http11), route_(parent_.cluster_.name(), timeout) {
 
   router_.setDecoderFilterCallbacks(*this);
-  // TODO: Support request trailers.
   // TODO: Correctly set protocol in request info when we support access logging.
 }
 
 AsyncStreamingRequestImpl::~AsyncStreamingRequestImpl() { ASSERT(!reset_callback_); }
 
 void AsyncStreamingRequestImpl::encodeHeaders(HeaderMapPtr&& headers, bool end_stream) {
-  response_.reset(new ResponseMessageImpl(std::move(headers)));
 #ifndef NDEBUG
   log_debug("async http request response headers (end_stream={}):", end_stream);
-  response_->headers().iterate([](const HeaderEntry& header, void*) -> void {
+  headers->iterate([](const HeaderEntry& header, void*) -> void {
     log_debug("  '{}':'{}'", header.key().c_str(), header.value().c_str());
   }, nullptr);
 #endif
 
-  if (end_stream) {
-    onComplete();
-  }
+  streaming_callbacks_.onHeaders(std::move(headers), end_stream);
 }
 
 void AsyncStreamingRequestImpl::encodeData(Buffer::Instance& data, bool end_stream) {
   log_trace("async http request response data (length={} end_stream={})", data.length(),
             end_stream);
-  if (!response_->body()) {
-    response_->body(Buffer::InstancePtr{new Buffer::OwnedImpl()});
-  }
-  response_->body()->move(data);
-
-  if (end_stream) {
-    onComplete();
-  }
+  streaming_callbacks_.onData(data, end_stream);
 }
 
 void AsyncStreamingRequestImpl::encodeTrailers(HeaderMapPtr&& trailers) {
-  response_->trailers(std::move(trailers));
 #ifndef NDEBUG
   log_debug("async http request response trailers:");
-  response_->trailers()->iterate([](const HeaderEntry& header, void*) -> void {
+  trailers->iterate([](const HeaderEntry& header, void*) -> void {
     log_debug("  '{}':'{}'", header.key().c_str(), header.value().c_str());
   }, nullptr);
 #endif
 
-  onComplete();
+  streaming_callbacks_.onTrailers(std::move(trailers));
 }
 
 void AsyncStreamingRequestImpl::cancel() {
@@ -104,7 +92,7 @@ void AsyncStreamingRequestImpl::cancel() {
 
 
 void AsyncStreamingRequestImpl::cleanup() {
-  response_.reset();
+  // response_.reset();
   reset_callback_ = nullptr;
 
   // This will destroy us, but only do so if we are actually in a list. This does not happen in
@@ -141,6 +129,7 @@ AsyncRequestImpl::AsyncRequestImpl(MessagePtr &&request,
   if (!complete_ && request_->body()) {
     router_.decodeData(*request_->body(), true);
   }
+  // TODO: Support request trailers.
 }
 
 AsyncRequestImpl::~AsyncRequestImpl() {}
@@ -152,15 +141,27 @@ void AsyncRequestImpl::onComplete() {
 }
 
 void AsyncRequestImpl::onHeaders(HeaderMapPtr &&headers, bool end_stream) {
+  response_.reset(new ResponseMessageImpl(std::move(headers)));
 
+  if (end_stream) {
+    onComplete();
+  }
 }
 
-void AsyncRequestImpl::onData(Buffer::InstancePtr &data, bool end_stream) {
+void AsyncRequestImpl::onData(Buffer::Instance &data, bool end_stream) {
+  if (!response_->body()) {
+    response_->body(Buffer::InstancePtr{new Buffer::OwnedImpl()});
+  }
+  response_->body()->move(data);
 
+  if (end_stream) {
+    onComplete();
+  }
 }
 
-void AsyncRequestImpl::onTrailers(HeaderMapPtr &&headers) {
-
+void AsyncRequestImpl::onTrailers(HeaderMapPtr &&trailers) {
+  response_->trailers(std::move(trailers));
+  onComplete();
 }
 
 void AsyncRequestImpl::onResetStream() {

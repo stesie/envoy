@@ -156,7 +156,6 @@ private:
   AsyncClientImpl& parent_;
   AsyncClient::StreamingCallbacks& streaming_callbacks_;
   const uint64_t stream_id_;
-  std::unique_ptr<MessageImpl> response_;
   Router::ProdFilter router_;
   std::function<void()> reset_callback_;
   AccessLog::RequestInfoImpl request_info_;
@@ -177,14 +176,15 @@ class AsyncRequestImpl final : public AsyncStreamingRequestImpl,
  private:
   const Buffer::Instance* decodingBuffer() override { return request_->body(); }
   void onHeaders(HeaderMapPtr&& headers, bool end_stream) override;
-  void onData(Buffer::InstancePtr& data, bool end_stream) override;
+  void onData(Buffer::Instance& data, bool end_stream) override;
   void onTrailers(HeaderMapPtr&& headers) override;
   void onResetStream() override;
   void onComplete() override;
   MessagePtr request_;
   AsyncClient::Callbacks& callbacks_;
-  friend class AsyncClientImpl;
+  std::unique_ptr<MessageImpl> response_;
 
+  friend class AsyncClientImpl;
 };
 
 } // Http

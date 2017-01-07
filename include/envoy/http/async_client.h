@@ -42,7 +42,7 @@ public:
     virtual ~StreamingCallbacks() {}
 
     virtual void onHeaders(HeaderMapPtr&& headers, bool end_stream) PURE;
-    virtual void onData(Buffer::InstancePtr& data, bool end_stream) PURE;
+    virtual void onData(Buffer::Instance& data, bool end_stream) PURE;
     virtual void onTrailers(HeaderMapPtr&& headers) PURE;
     virtual void onResetStream() PURE;
   };
