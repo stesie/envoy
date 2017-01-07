@@ -37,11 +37,21 @@ public:
     virtual void onFailure(FailureReason reason) PURE;
   };
 
+  class StreamingCallbacks {
+   public:
+    virtual ~StreamingCallbacks() {}
+
+    virtual void onHeaders(HeaderMapPtr&& headers, bool end_stream) PURE;
+    virtual void onData(Buffer::InstancePtr& data, bool end_stream) PURE;
+    virtual void onTrailers(HeaderMapPtr&& headers) PURE;
+    virtual void onResetStream() PURE;
+  };
+
   /**
    * An in-flight HTTP request
    */
   class Request {
-  public:
+   public:
     virtual ~Request() {}
 
     /**

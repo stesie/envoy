@@ -45,9 +45,9 @@ AsyncClient::Request* AsyncClientImpl::send(MessagePtr&& request, AsyncClient::C
 }
 
 AsyncStreamingRequestImpl::AsyncStreamingRequestImpl(
-    AsyncClientImpl& parent,
+    AsyncClientImpl& parent, AsyncClient::StreamingCallbacks& callbacks,
     const Optional<std::chrono::milliseconds>& timeout)
-    : parent_(parent),
+    : parent_(parent), streaming_callbacks_(callbacks),
       stream_id_(parent.config_.random_.random()), router_(parent.config_),
       request_info_(Protocol::Http11), route_(parent_.cluster_.name(), timeout) {
 
@@ -114,6 +114,12 @@ void AsyncStreamingRequestImpl::cleanup() {
   }
 }
 
+void AsyncStreamingRequestImpl::resetStream() {
+  streaming_callbacks_.onResetStream();
+  cleanup();
+}
+
+
 void AsyncStreamingRequestImpl::failDueToClientDestroy() {
   // In this case we are going away because the client is being destroyed. We need to both reset
   // the stream as well as raise a failure callback.
@@ -125,7 +131,7 @@ AsyncRequestImpl::AsyncRequestImpl(MessagePtr &&request,
                                    AsyncClientImpl &parent,
                                    AsyncClient::Callbacks &callbacks,
                                    const Optional<std::chrono::milliseconds> &timeout)
-    : AsyncStreamingRequestImpl(parent, timeout), request_(std::move(request)),
+    : AsyncStreamingRequestImpl(parent, *this, timeout), request_(std::move(request)),
       callbacks_(callbacks) {
 
   request_->headers().insertEnvoyInternalRequest().value(
@@ -139,16 +145,27 @@ AsyncRequestImpl::AsyncRequestImpl(MessagePtr &&request,
 
 AsyncRequestImpl::~AsyncRequestImpl() {}
 
-void AsyncRequestImpl::resetStream() {
-  // In this case we don't have a valid response so we do need to raise a failure.
-  callbacks_.onFailure(AsyncClient::FailureReason::Reset);
-  cleanup();
-}
-
 void AsyncRequestImpl::onComplete() {
   complete_ = true;
   callbacks_.onSuccess(std::move(response_));
   cleanup();
+}
+
+void AsyncRequestImpl::onHeaders(HeaderMapPtr &&headers, bool end_stream) {
+
+}
+
+void AsyncRequestImpl::onData(Buffer::InstancePtr &data, bool end_stream) {
+
+}
+
+void AsyncRequestImpl::onTrailers(HeaderMapPtr &&headers) {
+
+}
+
+void AsyncRequestImpl::onResetStream() {
+  // In this case we don't have a valid response so we do need to raise a failure.
+  callbacks_.onFailure(AsyncClient::FailureReason::Reset);
 }
 
 } // Http

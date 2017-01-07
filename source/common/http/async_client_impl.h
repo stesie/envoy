@@ -54,7 +54,7 @@ class AsyncStreamingRequestImpl : public AsyncClient::Request,
                                   Logger::Loggable<Logger::Id::http>,
                                   LinkedObject<AsyncStreamingRequestImpl> {
 public:
-  AsyncStreamingRequestImpl(AsyncClientImpl& parent,
+  AsyncStreamingRequestImpl(AsyncClientImpl& parent, AsyncClient::StreamingCallbacks& callbacks,
                             const Optional<std::chrono::milliseconds>& timeout);
   virtual ~AsyncStreamingRequestImpl();
 
@@ -135,6 +135,7 @@ private:
   }
   uint64_t connectionId() override { return 0; }
   Event::Dispatcher& dispatcher() override { return parent_.dispatcher_; }
+  void resetStream() override;
   const Router::StableRouteTable& routeTable() { return *this; }
   uint64_t streamId() override { return stream_id_; }
   AccessLog::RequestInfo& requestInfo() override { return request_info_; }
@@ -153,6 +154,7 @@ private:
   }
 
   AsyncClientImpl& parent_;
+  AsyncClient::StreamingCallbacks& streaming_callbacks_;
   const uint64_t stream_id_;
   std::unique_ptr<MessageImpl> response_;
   Router::ProdFilter router_;
@@ -165,7 +167,8 @@ private:
   friend class AsyncRequestImpl;
 };
 
-class AsyncRequestImpl final : public AsyncStreamingRequestImpl {
+class AsyncRequestImpl final : public AsyncStreamingRequestImpl,
+                               AsyncClient::StreamingCallbacks {
  public:
   AsyncRequestImpl(MessagePtr&& request, AsyncClientImpl& parent,
       AsyncClient::Callbacks& callbacks, const Optional<std::chrono::milliseconds>& timeout);
@@ -173,7 +176,10 @@ class AsyncRequestImpl final : public AsyncStreamingRequestImpl {
 
  private:
   const Buffer::Instance* decodingBuffer() override { return request_->body(); }
-  void resetStream() override;
+  void onHeaders(HeaderMapPtr&& headers, bool end_stream) override;
+  void onData(Buffer::InstancePtr& data, bool end_stream) override;
+  void onTrailers(HeaderMapPtr&& headers) override;
+  void onResetStream() override;
   void onComplete() override;
   MessagePtr request_;
   AsyncClient::Callbacks& callbacks_;
