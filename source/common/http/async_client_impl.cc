@@ -45,21 +45,13 @@ AsyncClient::Request* AsyncClientImpl::send(MessagePtr&& request, AsyncClient::C
 }
 
 AsyncStreamingRequestImpl::AsyncStreamingRequestImpl(
-    MessagePtr&& request, AsyncClientImpl& parent, AsyncClient::Callbacks& callbacks,
+    AsyncClientImpl& parent, AsyncClient::Callbacks& callbacks,
     const Optional<std::chrono::milliseconds>& timeout)
-    : request_(std::move(request)), parent_(parent), callbacks_(callbacks),
+    : parent_(parent), callbacks_(callbacks),
       stream_id_(parent.config_.random_.random()), router_(parent.config_),
       request_info_(Protocol::Http11), route_(parent_.cluster_.name(), timeout) {
 
   router_.setDecoderFilterCallbacks(*this);
-  request_->headers().insertEnvoyInternalRequest().value(
-      Headers::get().EnvoyInternalRequestValues.True);
-  request_->headers().insertForwardedFor().value(parent_.config_.local_info_.address());
-  router_.decodeHeaders(request_->headers(), !request_->body());
-  if (!complete_ && request_->body()) {
-    router_.decodeData(*request_->body(), true);
-  }
-
   // TODO: Support request trailers.
   // TODO: Correctly set protocol in request info when we support access logging.
 }
@@ -145,7 +137,15 @@ AsyncRequestImpl::AsyncRequestImpl(MessagePtr &&request,
                                    AsyncClientImpl &parent,
                                    AsyncClient::Callbacks &callbacks,
                                    const Optional<std::chrono::milliseconds> &timeout)
-    : AsyncStreamingRequestImpl(std::move(request), parent, callbacks, timeout) {
+    : AsyncStreamingRequestImpl(parent, callbacks, timeout), request_(std::move(request)) {
+
+  request_->headers().insertEnvoyInternalRequest().value(
+      Headers::get().EnvoyInternalRequestValues.True);
+  request_->headers().insertForwardedFor().value(parent_.config_.local_info_.address());
+  router_.decodeHeaders(request_->headers(), !request_->body());
+  if (!complete_ && request_->body()) {
+    router_.decodeData(*request_->body(), true);
+  }
 }
 
 AsyncRequestImpl::~AsyncRequestImpl() {}

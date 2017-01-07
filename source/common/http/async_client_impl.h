@@ -1,5 +1,5 @@
 #pragma once
-
+#include "precompiled/precompiled.h"
 #include "message_impl.h"
 
 #include "envoy/event/dispatcher.h"
@@ -19,6 +19,7 @@
 namespace Http {
 
 class AsyncStreamingRequestImpl;
+class AsyncRequestImpl;
 
 class AsyncClientImpl final : public AsyncClient {
 public:
@@ -40,6 +41,7 @@ private:
   const std::string local_address_;
 
   friend class AsyncStreamingRequestImpl;
+  friend class AsyncRequestImpl;
 };
 
 /**
@@ -52,7 +54,7 @@ class AsyncStreamingRequestImpl : public AsyncClient::Request,
                                   Logger::Loggable<Logger::Id::http>,
                                   LinkedObject<AsyncStreamingRequestImpl> {
 public:
-  AsyncStreamingRequestImpl(MessagePtr&& request, AsyncClientImpl& parent,
+  AsyncStreamingRequestImpl(AsyncClientImpl& parent,
                             AsyncClient::Callbacks& callbacks,
                             const Optional<std::chrono::milliseconds>& timeout);
   virtual ~AsyncStreamingRequestImpl();
@@ -140,7 +142,6 @@ private:
   AccessLog::RequestInfo& requestInfo() override { return request_info_; }
   const std::string& downstreamAddress() override { return EMPTY_STRING; }
   void continueDecoding() override { NOT_IMPLEMENTED; }
-  const Buffer::Instance* decodingBuffer() override { return request_->body(); }
   void encodeHeaders(HeaderMapPtr&& headers, bool end_stream) override;
   void encodeData(Buffer::Instance& data, bool end_stream) override;
   void encodeTrailers(HeaderMapPtr&& trailers) override;
@@ -153,7 +154,6 @@ private:
     return &route_;
   }
 
-  MessagePtr request_;
   AsyncClientImpl& parent_;
   AsyncClient::Callbacks& callbacks_;
   const uint64_t stream_id_;
@@ -165,6 +165,7 @@ private:
   bool complete_{};
 
   friend class AsyncClientImpl;
+  friend class AsyncRequestImpl;
 };
 
 class AsyncRequestImpl final : public AsyncStreamingRequestImpl {
@@ -174,6 +175,8 @@ class AsyncRequestImpl final : public AsyncStreamingRequestImpl {
   virtual ~AsyncRequestImpl();
 
  private:
+  const Buffer::Instance* decodingBuffer() override { return request_->body(); }
+  MessagePtr request_;
   friend class AsyncClientImpl;
 
 };
