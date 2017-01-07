@@ -48,7 +48,7 @@ private:
  * Implementation of AsyncRequest. This implementation is capable of sending HTTP requests to a
  * ConnectionPool asynchronously.
  */
-class AsyncStreamingRequestImpl : public AsyncClient::Request,
+class AsyncStreamingRequestImpl : public AsyncClient::StreamingRequest,
                                   StreamDecoderFilterCallbacks,
                                   Router::StableRouteTable,
                                   Logger::Loggable<Logger::Id::http>,
@@ -58,8 +58,26 @@ public:
                             const Optional<std::chrono::milliseconds>& timeout);
   virtual ~AsyncStreamingRequestImpl();
 
-  // Http::AsyncHttpRequest
-  void cancel() override;
+  // Http::AsyncClient::StreamingRequest
+  void sendHeaders(HeaderMap& headers, bool end_stream) override {
+    router_.decodeHeaders(headers, end_stream);
+  }
+  void sendData(Buffer::Instance& data, bool end_stream) override {
+    router_.decodeData(data, end_stream);
+    decoding_buffer_ = &data;
+  };
+  void sendTrailers(HeaderMap& trailers) override {
+    router_.decodeTrailers(trailers);
+  };
+  void sendResetStream() override {
+    reset_callback_();
+    cleanup();
+  };
+
+ protected:
+  bool complete_{};
+  AsyncClientImpl& parent_;
+  void cleanup();
 
 private:
   struct NullRateLimitPolicy : public Router::RateLimitPolicy {
@@ -125,7 +143,6 @@ private:
     Optional<std::chrono::milliseconds> timeout_;
   };
 
-  void cleanup();
   void failDueToClientDestroy();
   virtual void onComplete() PURE;
 
@@ -141,6 +158,7 @@ private:
   AccessLog::RequestInfo& requestInfo() override { return request_info_; }
   const std::string& downstreamAddress() override { return EMPTY_STRING; }
   void continueDecoding() override { NOT_IMPLEMENTED; }
+  const Buffer::Instance* decodingBuffer() override { return decoding_buffer_; }
   void encodeHeaders(HeaderMapPtr&& headers, bool end_stream) override;
   void encodeData(Buffer::Instance& data, bool end_stream) override;
   void encodeTrailers(HeaderMapPtr&& trailers) override;
@@ -153,31 +171,32 @@ private:
     return &route_;
   }
 
-  AsyncClientImpl& parent_;
   AsyncClient::StreamingCallbacks& streaming_callbacks_;
   const uint64_t stream_id_;
   Router::ProdFilter router_;
   std::function<void()> reset_callback_;
   AccessLog::RequestInfoImpl request_info_;
   RouteEntryImpl route_;
-  bool complete_{};
+  Buffer::Instance* decoding_buffer_{nullptr};
 
   friend class AsyncClientImpl;
-  friend class AsyncRequestImpl;
 };
 
 class AsyncRequestImpl final : public AsyncStreamingRequestImpl,
+                               public AsyncClient::Request,
                                AsyncClient::StreamingCallbacks {
  public:
   AsyncRequestImpl(MessagePtr&& request, AsyncClientImpl& parent,
       AsyncClient::Callbacks& callbacks, const Optional<std::chrono::milliseconds>& timeout);
   virtual ~AsyncRequestImpl();
 
+  // AsyncClient::Request
+  virtual void cancel() override;
+
  private:
-  const Buffer::Instance* decodingBuffer() override { return request_->body(); }
   void onHeaders(HeaderMapPtr&& headers, bool end_stream) override;
   void onData(Buffer::Instance& data, bool end_stream) override;
-  void onTrailers(HeaderMapPtr&& headers) override;
+  void onTrailers(HeaderMapPtr&& trailers) override;
   void onResetStream() override;
   void onComplete() override;
   MessagePtr request_;

@@ -32,13 +32,13 @@ AsyncClientImpl::~AsyncClientImpl() {
 
 AsyncClient::Request* AsyncClientImpl::send(MessagePtr&& request, AsyncClient::Callbacks& callbacks,
                                             const Optional<std::chrono::milliseconds>& timeout) {
-  std::unique_ptr<AsyncStreamingRequestImpl> new_request{
-      new AsyncRequestImpl(std::move(request), *this, callbacks, timeout)};
+  AsyncRequestImpl *async_request = new AsyncRequestImpl(std::move(request), *this, callbacks, timeout);
+  std::unique_ptr<AsyncStreamingRequestImpl> new_request{async_request};
 
   // The request may get immediately failed. If so, we will return nullptr.
   if (!new_request->complete_) {
     new_request->moveIntoList(std::move(new_request), active_requests_);
-    return active_requests_.front().get();
+    return async_request;
   } else {
     return nullptr;
   }
@@ -85,11 +85,11 @@ void AsyncStreamingRequestImpl::encodeTrailers(HeaderMapPtr&& trailers) {
   streaming_callbacks_.onTrailers(std::move(trailers));
 }
 
-void AsyncStreamingRequestImpl::cancel() {
-  reset_callback_();
-  cleanup();
-}
-
+/*void AsyncStreamingRequestImpl::sendHeaders(HeaderMapPtr &&headers, bool end_stream) {}
+void AsyncStreamingRequestImpl::sendData(Buffer::Instance &data, bool end_stream) {}
+void AsyncStreamingRequestImpl::sendTrailers(HeaderMapPtr &&trailers) {}
+void AsyncStreamingRequestImpl::sendResetStream() {}
+*/
 
 void AsyncStreamingRequestImpl::cleanup() {
   // response_.reset();
@@ -125,9 +125,9 @@ AsyncRequestImpl::AsyncRequestImpl(MessagePtr &&request,
   request_->headers().insertEnvoyInternalRequest().value(
       Headers::get().EnvoyInternalRequestValues.True);
   request_->headers().insertForwardedFor().value(parent_.config_.local_info_.address());
-  router_.decodeHeaders(request_->headers(), !request_->body());
+  sendHeaders(request_->headers(), !request_->body());
   if (!complete_ && request_->body()) {
-    router_.decodeData(*request_->body(), true);
+    sendData(*request_->body(), true);
   }
   // TODO: Support request trailers.
 }
@@ -168,5 +168,10 @@ void AsyncRequestImpl::onResetStream() {
   // In this case we don't have a valid response so we do need to raise a failure.
   callbacks_.onFailure(AsyncClient::FailureReason::Reset);
 }
+
+void AsyncRequestImpl::cancel() {
+  sendResetStream();
+}
+
 
 } // Http

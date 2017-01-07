@@ -43,7 +43,7 @@ public:
 
     virtual void onHeaders(HeaderMapPtr&& headers, bool end_stream) PURE;
     virtual void onData(Buffer::Instance& data, bool end_stream) PURE;
-    virtual void onTrailers(HeaderMapPtr&& headers) PURE;
+    virtual void onTrailers(HeaderMapPtr&& trailers) PURE;
     virtual void onResetStream() PURE;
   };
 
@@ -58,6 +58,15 @@ public:
      * Signals that the request should be cancelled.
      */
     virtual void cancel() PURE;
+  };
+
+  class StreamingRequest {
+   public:
+    virtual ~StreamingRequest() {}
+    virtual void sendHeaders(HeaderMap& headers, bool end_stream) PURE;
+    virtual void sendData(Buffer::Instance& data, bool end_stream) PURE;
+    virtual void sendTrailers(HeaderMap& trailers) PURE;
+    virtual void sendResetStream() PURE;
   };
 
   virtual ~AsyncClient() {}
