@@ -294,6 +294,14 @@ public:
 
   MOCK_METHOD3(send_, Request*(MessagePtr& request, Callbacks& callbacks,
                                const Optional<std::chrono::milliseconds>& timeout));
+
+  StreamingRequest* start(StreamingCallbacks& callbacks,
+                        const Optional<std::chrono::milliseconds>& timeout) override {
+    return start_(callbacks, timeout);
+  }
+
+  MOCK_METHOD2(start_, StreamingRequest*(StreamingCallbacks& callbacks,
+                                         const Optional<std::chrono::milliseconds>& timeout));
 };
 
 class MockAsyncClientCallbacks : public AsyncClient::Callbacks {

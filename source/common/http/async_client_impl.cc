@@ -44,6 +44,20 @@ AsyncClient::Request* AsyncClientImpl::send(MessagePtr&& request, AsyncClient::C
   }
 }
 
+AsyncClient::StreamingRequest* AsyncClientImpl::start(AsyncClient::StreamingCallbacks& callbacks,
+                                                      const Optional<std::chrono::milliseconds>& timeout) {
+  AsyncStreamingRequestImpl *async_request = new AsyncStreamingRequestImpl(*this, callbacks, timeout);
+  std::unique_ptr<AsyncStreamingRequestImpl> new_request{async_request};
+
+  // The request may get immediately failed. If so, we will return nullptr.
+  if (!new_request->complete_) {
+    new_request->moveIntoList(std::move(new_request), active_requests_);
+    return async_request;
+  } else {
+    return nullptr;
+  }
+}
+
 AsyncStreamingRequestImpl::AsyncStreamingRequestImpl(
     AsyncClientImpl& parent, AsyncClient::StreamingCallbacks& callbacks,
     const Optional<std::chrono::milliseconds>& timeout)
@@ -122,9 +136,6 @@ AsyncRequestImpl::AsyncRequestImpl(MessagePtr &&request,
     : AsyncStreamingRequestImpl(parent, *this, timeout), request_(std::move(request)),
       callbacks_(callbacks) {
 
-  request_->headers().insertEnvoyInternalRequest().value(
-      Headers::get().EnvoyInternalRequestValues.True);
-  request_->headers().insertForwardedFor().value(parent_.config_.local_info_.address());
   sendHeaders(request_->headers(), !request_->body());
   if (!complete_ && request_->body()) {
     sendData(*request_->body(), true);

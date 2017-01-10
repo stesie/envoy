@@ -33,6 +33,9 @@ public:
   Request* send(MessagePtr&& request, Callbacks& callbacks,
                 const Optional<std::chrono::milliseconds>& timeout) override;
 
+  StreamingRequest* start(StreamingCallbacks& callbacks,
+                          const Optional<std::chrono::milliseconds>& timeout) override;
+
 private:
   const Upstream::ClusterInfo& cluster_;
   Router::FilterConfig config_;
@@ -60,6 +63,12 @@ public:
 
   // Http::AsyncClient::StreamingRequest
   void sendHeaders(HeaderMap& headers, bool end_stream) override {
+    if (!internal_header_inserted_) {
+      headers.insertEnvoyInternalRequest().value(
+          Headers::get().EnvoyInternalRequestValues.True);
+      headers.insertForwardedFor().value(parent_.config_.local_info_.address());
+      internal_header_inserted_ = true;
+    }
     router_.decodeHeaders(headers, end_stream);
   }
   void sendData(Buffer::Instance& data, bool end_stream) override {
@@ -144,7 +153,6 @@ private:
   };
 
   void failDueToClientDestroy();
-  virtual void onComplete() PURE;
 
   // Http::StreamDecoderFilterCallbacks
   void addResetStreamCallback(std::function<void()> callback) override {
@@ -178,7 +186,7 @@ private:
   AccessLog::RequestInfoImpl request_info_;
   RouteEntryImpl route_;
   Buffer::Instance* decoding_buffer_{nullptr};
-
+  bool internal_header_inserted_{false};
   friend class AsyncClientImpl;
 };
 
@@ -198,7 +206,7 @@ class AsyncRequestImpl final : public AsyncStreamingRequestImpl,
   void onData(Buffer::Instance& data, bool end_stream) override;
   void onTrailers(HeaderMapPtr&& trailers) override;
   void onResetStream() override;
-  void onComplete() override;
+  void onComplete();
   MessagePtr request_;
   AsyncClient::Callbacks& callbacks_;
   std::unique_ptr<MessageImpl> response_;

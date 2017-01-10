@@ -81,6 +81,9 @@ public:
    */
   virtual Request* send(MessagePtr&& request, Callbacks& callbacks,
                         const Optional<std::chrono::milliseconds>& timeout) PURE;
+
+  virtual StreamingRequest* start(StreamingCallbacks& callbacks,
+                                  const Optional<std::chrono::milliseconds>& timeout) PURE;
 };
 
 typedef std::unique_ptr<AsyncClient> AsyncClientPtr;
