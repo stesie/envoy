@@ -108,6 +108,14 @@ elif [[ "$1" == "bazel.coverage" ]]; then
   SRCDIR="${GCOVR_DIR}" "${ENVOY_SRCDIR}"/test/run_envoy_bazel_coverage.sh
   rsync -av "${ENVOY_BUILD_DIR}"/bazel-envoy/generated/coverage/ "${ENVOY_COVERAGE_DIR}"
   exit 0
+elif [[ "$1" == "bazel.1526" ]]; then
+  setup_gcc_toolchain
+  # This doesn't go into CI but is available for developer convenience.
+  echo "bazel fastbuild build with tests..."
+  cd "${ENVOY_CI_DIR}"
+  echo "Testing..."
+  bazel --batch test ${BAZEL_TEST_OPTIONS} -c fastbuild //test/tools/router_check/test:router_tool_test --runs_per_test=1000
+  exit 0
 elif [[ "$1" == "fix_format" ]]; then
   echo "fix_format..."
   cd "${ENVOY_SRCDIR}"
