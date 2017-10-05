@@ -12,6 +12,7 @@ class TranscoderInputStreamImpl : public Buffer::ZeroCopyInputStreamImpl,
 public:
   // TranscoderInputStream
   virtual int64_t BytesAvailable() const override;
+  virtual bool Finished() const override;
 };
 
 } // namespace Grpc

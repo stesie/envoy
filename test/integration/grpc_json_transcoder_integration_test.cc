@@ -42,12 +42,11 @@ public:
   }
 
 protected:
-  template <class RequestType, class ResponseType>
-  void testTranscoding(Http::HeaderMap&& request_headers, const std::string& request_body,
-                       const std::vector<std::string>& grpc_request_messages,
-                       const std::vector<std::string>& grpc_response_messages,
-                       const Status& grpc_status, Http::HeaderMap&& response_headers,
-                       const std::string& response_body) {
+  void testRawTranscoding(Http::HeaderMap&& request_headers, const std::string& request_body,
+                          const std::vector<Grpc::Frame>& grpc_request_messages,
+                          const std::vector<std::string>& grpc_response_messages,
+                          const Status& grpc_status, Http::HeaderMap&& response_headers,
+                          const std::string& response_body) {
     response_.reset(new IntegrationStreamDecoder(*dispatcher_));
 
     codec_client_ = makeHttpConnection(lookupPort("http"));
@@ -71,15 +70,11 @@ protected:
       EXPECT_EQ(grpc_request_messages.size(), frames.size());
 
       for (size_t i = 0; i < grpc_request_messages.size(); ++i) {
-        RequestType actual_message;
-        if (frames[i].length_ > 0) {
-          EXPECT_TRUE(
-              actual_message.ParseFromString(TestUtility::bufferToString(*frames[i].data_)));
-        }
-        RequestType expected_message;
-        EXPECT_TRUE(TextFormat::ParseFromString(grpc_request_messages[i], &expected_message));
-
-        EXPECT_TRUE(MessageDifferencer::Equivalent(expected_message, actual_message));
+        EXPECT_EQ(grpc_request_messages[i].flags_, frames[i].flags_);
+        EXPECT_EQ(grpc_request_messages[i].length_, frames[i].length_);
+        EXPECT_EQ(
+            TestUtility::bufferToString(*grpc_request_messages[i].data_),
+            TestUtility::bufferToString(*frames[i].data_));
       }
 
       Http::TestHeaderMapImpl response_headers;
@@ -92,10 +87,9 @@ protected:
       } else {
         upstream_request_->encodeHeaders(response_headers, false);
         for (const auto& response_message_str : grpc_response_messages) {
-          ResponseType response_message;
-          EXPECT_TRUE(TextFormat::ParseFromString(response_message_str, &response_message));
-          auto buffer = Grpc::Common::serializeBody(response_message);
-          upstream_request_->encodeData(*buffer, false);
+          Buffer::OwnedImpl buffer;
+          buffer.add(response_message_str);
+          upstream_request_->encodeData(buffer, false);
         }
         Http::TestHeaderMapImpl response_trailers;
         response_trailers.insertGrpcStatus().value(grpc_status.error_code());
@@ -123,6 +117,45 @@ protected:
     codec_client_->close();
     fake_upstream_connection_->close();
     fake_upstream_connection_->waitForDisconnect();
+
+  }
+
+  template <class RequestType, class ResponseType>
+  void testTranscoding(Http::HeaderMap&& request_headers, const std::string& request_body,
+                       const std::vector<std::string>& grpc_request_messages,
+                       const std::vector<std::string>& grpc_response_messages,
+                       const Status& grpc_status, Http::HeaderMap&& response_headers,
+                       const std::string& response_body) {
+    std::vector<std::string> raw_grpc_request_messages;
+    std::vector<Grpc::Frame> raw_grpc_request_frames;
+    for (size_t i = 0; i < grpc_request_messages.size(); ++i) {
+      RequestType expected_message;
+      EXPECT_TRUE(TextFormat::ParseFromString(grpc_request_messages[i], &expected_message));
+
+      Grpc::Frame frame;
+      frame.length_ = expected_message.ByteSize();
+
+      std::string message_bin;
+      EXPECT_TRUE(expected_message.SerializeToString(&message_bin));
+
+      frame.data_.reset(new Buffer::OwnedImpl);
+      frame.data_->add(message_bin);
+
+      raw_grpc_request_frames.push_back(std::move(frame));
+
+//      auto buffer = Grpc::Common::serializeBody(expected_message);
+//      raw_grpc_request_messages.push_back(TestUtility::bufferToString(*buffer));
+    }
+
+    std::vector<std::string> raw_grpc_response_messages;
+    for (const auto& response_message_str : grpc_response_messages) {
+      ResponseType response_message;
+      EXPECT_TRUE(TextFormat::ParseFromString(response_message_str, &response_message));
+      auto buffer = Grpc::Common::serializeBody(response_message);
+      raw_grpc_response_messages.push_back(TestUtility::bufferToString(*buffer));
+    }
+
+    testRawTranscoding(std::move(request_headers), request_body, raw_grpc_request_frames, raw_grpc_response_messages, grpc_status, std::move(response_headers), response_body);
   }
 };
 
@@ -287,6 +320,32 @@ TEST_P(GrpcJsonTranscoderIntegrationTest, InvalidJson) {
       "Expected : between key:value pair.\n"
       "{ \"theme\"  \"Children\" }\n"
       "           ^");
+}
+
+TEST_P(GrpcJsonTranscoderIntegrationTest, InvalidGrpcFrame) {
+  testTranscoding<bookstore::CreateShelfRequest, bookstore::Shelf>(
+      Http::TestHeaderMapImpl{{":method", "POST"}, {":path", "/shelf"}, {":authority", "host"}},
+      R"(INVALID_JSON)", {}, {}, Status(),
+      Http::TestHeaderMapImpl{{":status", "400"}, {"content-type", "text/plain"}},
+      "Unexpected token.\n"
+          "INVALID_JSON\n"
+          "^");
+
+  testTranscoding<bookstore::CreateShelfRequest, bookstore::Shelf>(
+      Http::TestHeaderMapImpl{{":method", "POST"}, {":path", "/shelf"}, {":authority", "host"}},
+      R"({ "theme" : "Children")", {}, {}, Status(),
+      Http::TestHeaderMapImpl{{":status", "400"}, {"content-type", "text/plain"}},
+      "Unexpected end of string. Expected , or } after key:value pair.\n"
+          "\n"
+          "^");
+
+  testTranscoding<bookstore::CreateShelfRequest, bookstore::Shelf>(
+      Http::TestHeaderMapImpl{{":method", "POST"}, {":path", "/shelf"}, {":authority", "host"}},
+      R"({ "theme"  "Children" })", {}, {}, Status(),
+      Http::TestHeaderMapImpl{{":status", "400"}, {"content-type", "text/plain"}},
+      "Expected : between key:value pair.\n"
+          "{ \"theme\"  \"Children\" }\n"
+          "           ^");
 }
 
 } // namespace Envoy
