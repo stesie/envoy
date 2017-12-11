@@ -279,11 +279,15 @@ public:
     server_.reset(new TestDnsServer());
     socket_.reset(
         new Network::TcpListenSocket(Network::Test::getCanonicalLoopbackAddress(GetParam()), true));
-    listener_ = dispatcher_.createListener(connection_handler_, *socket_, *server_, stats_store_,
+    listener_ = dispatcher_.createListener(connection_handler_,
+                                           *socket_,
+                                           *server_,
+                                           nullptr,
+                                           stats_store_,
                                            {.bind_to_port_ = true,
-                                            .use_proxy_proto_ = false,
-                                            .use_original_dst_ = false,
-                                            .per_connection_buffer_limit_bytes_ = 0});
+                                               .use_proxy_proto_ = false,
+                                               .use_original_dst_ = false,
+                                               .per_connection_buffer_limit_bytes_ = 0});
 
     // Point c-ares at the listener with no search domains and TCP-only.
     peer_.reset(new DnsResolverImplPeer(dynamic_cast<DnsResolverImpl*>(resolver_.get())));

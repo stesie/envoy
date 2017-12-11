@@ -57,14 +57,6 @@ ConnectionImpl::ConnectionImpl(Event::DispatcherImpl& dispatcher, int fd,
                                Address::InstanceConstSharedPtr remote_address,
                                Address::InstanceConstSharedPtr local_address,
                                Address::InstanceConstSharedPtr bind_to_address,
-                               bool using_original_dst, bool connected)
-    : ConnectionImpl(dispatcher, fd, remote_address, local_address, bind_to_address,
-                     TransportSocketPtr{new RawBufferSocket}, using_original_dst, connected) {}
-
-ConnectionImpl::ConnectionImpl(Event::DispatcherImpl& dispatcher, int fd,
-                               Address::InstanceConstSharedPtr remote_address,
-                               Address::InstanceConstSharedPtr local_address,
-                               Address::InstanceConstSharedPtr bind_to_address,
                                TransportSocketPtr&& transport_socket, bool using_original_dst,
                                bool connected)
     : filter_manager_(*this, *this), remote_address_(remote_address),
@@ -105,6 +97,10 @@ ConnectionImpl::ConnectionImpl(Event::DispatcherImpl& dispatcher, int fd,
     }
   }
 
+  // TODO(lizan): Remove
+  if (!transport_socket_) {
+    transport_socket_.reset(new RawBufferSocket);
+  }
   transport_socket_->setTransportSocketCallbacks(*this);
 }
 
@@ -524,9 +520,10 @@ void ConnectionImpl::updateWriteBufferStats(uint64_t num_written, uint64_t new_s
 
 ClientConnectionImpl::ClientConnectionImpl(
     Event::DispatcherImpl& dispatcher, Address::InstanceConstSharedPtr address,
-    const Network::Address::InstanceConstSharedPtr source_address)
+    const Network::Address::InstanceConstSharedPtr source_address,
+    TransportSocketPtr&& transport_socket)
     : ConnectionImpl(dispatcher, address->socket(Address::SocketType::Stream), address, nullptr,
-                     source_address, false, false) {}
+                     source_address, std::move(transport_socket), false, false) {}
 
 } // namespace Network
 } // namespace Envoy

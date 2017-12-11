@@ -5,6 +5,7 @@
 #include "envoy/server/drain_manager.h"
 #include "envoy/server/filter_config.h"
 #include "envoy/server/guarddog.h"
+#include "envoy/server/transport_socket_config.h"
 #include "envoy/ssl/context.h"
 
 #include "common/protobuf/protobuf.h"
@@ -39,6 +40,13 @@ public:
   virtual std::vector<Configuration::NetworkFilterFactoryCb>
   createFilterFactoryList(const Protobuf::RepeatedPtrField<envoy::api::v2::Filter>& filters,
                           Configuration::FactoryContext& context) PURE;
+
+  /**
+   * Creates a transport socket factory.
+   * @return Configuration::TransportSocketFactoryCb the transport socket factory.
+   */
+  virtual Network::TransportSocketFactory
+  createTransportSocketFactory(const envoy::api::v2::TransportSocket& transport_socket) PURE;
 
   /**
    * @return DrainManagerPtr a new drain manager.

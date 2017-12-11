@@ -30,13 +30,18 @@ class ProxyProtocolTest : public testing::TestWithParam<Address::IpVersion> {
 public:
   ProxyProtocolTest()
       : socket_(Network::Test::getCanonicalLoopbackAddress(GetParam()), true),
-        listener_(dispatcher_.createListener(connection_handler_, socket_, callbacks_, stats_store_,
+        listener_(dispatcher_.createListener(connection_handler_,
+                                             socket_,
+                                             callbacks_,
+                                             nullptr,
+                                             stats_store_,
                                              {.bind_to_port_ = true,
-                                              .use_proxy_proto_ = true,
-                                              .use_original_dst_ = false,
-                                              .per_connection_buffer_limit_bytes_ = 0})) {
+                                                 .use_proxy_proto_ = true,
+                                                 .use_original_dst_ = false,
+                                                 .per_connection_buffer_limit_bytes_ = 0})) {
     conn_ = dispatcher_.createClientConnection(socket_.localAddress(),
-                                               Network::Address::InstanceConstSharedPtr());
+                                               Network::Address::InstanceConstSharedPtr(),
+                                               Envoy::Network::TransportSocketPtr());
     conn_->addConnectionCallbacks(connection_callbacks_);
   }
 
@@ -289,13 +294,18 @@ public:
         local_dst_address_(Network::Utility::getAddressWithPort(
             *Network::Test::getCanonicalLoopbackAddress(GetParam()),
             socket_.localAddress()->ip()->port())),
-        listener_(dispatcher_.createListener(connection_handler_, socket_, callbacks_, stats_store_,
+        listener_(dispatcher_.createListener(connection_handler_,
+                                             socket_,
+                                             callbacks_,
+                                             nullptr,
+                                             stats_store_,
                                              {.bind_to_port_ = true,
-                                              .use_proxy_proto_ = true,
-                                              .use_original_dst_ = false,
-                                              .per_connection_buffer_limit_bytes_ = 0})) {
+                                                 .use_proxy_proto_ = true,
+                                                 .use_original_dst_ = false,
+                                                 .per_connection_buffer_limit_bytes_ = 0})) {
     conn_ = dispatcher_.createClientConnection(local_dst_address_,
-                                               Network::Address::InstanceConstSharedPtr());
+                                               Network::Address::InstanceConstSharedPtr(),
+                                               Envoy::Network::TransportSocketPtr());
     conn_->addConnectionCallbacks(connection_callbacks_);
   }
 

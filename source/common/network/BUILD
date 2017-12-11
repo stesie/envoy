@@ -125,6 +125,7 @@ envoy_cc_library(
         "//include/envoy/event:file_event_interface",
         "//include/envoy/network:connection_handler_interface",
         "//include/envoy/network:listener_interface",
+        "//include/envoy/network:transport_socket_interface",
         "//include/envoy/stats:stats_interface",
         "//include/envoy/stats:stats_macros",
         "//source/common/common:empty_string",

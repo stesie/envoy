@@ -477,8 +477,9 @@ TEST_P(SslConnectionImplTest, FlushCloseDuringHandshake) {
       dispatcher.createSslListener(connection_handler, *server_ctx, socket, callbacks, stats_store,
                                    Network::ListenerOptions::listenerOptionsWithBindToPort());
 
-  Network::ClientConnectionPtr client_connection = dispatcher.createClientConnection(
-      socket.localAddress(), Network::Address::InstanceConstSharedPtr());
+  Network::ClientConnectionPtr client_connection = dispatcher.createClientConnection(socket.localAddress(),
+                                                                                     Network::Address::InstanceConstSharedPtr(),
+                                                                                     Envoy::Network::TransportSocketPtr());
   client_connection->connect();
   Network::MockConnectionCallbacks client_connection_callbacks;
   client_connection->addConnectionCallbacks(client_connection_callbacks);
@@ -985,8 +986,9 @@ TEST_P(SslConnectionImplTest, SslError) {
       dispatcher.createSslListener(connection_handler, *server_ctx, socket, callbacks, stats_store,
                                    Network::ListenerOptions::listenerOptionsWithBindToPort());
 
-  Network::ClientConnectionPtr client_connection = dispatcher.createClientConnection(
-      socket.localAddress(), Network::Address::InstanceConstSharedPtr());
+  Network::ClientConnectionPtr client_connection = dispatcher.createClientConnection(socket.localAddress(),
+                                                                                     Network::Address::InstanceConstSharedPtr(),
+                                                                                     Envoy::Network::TransportSocketPtr());
   client_connection->connect();
   Buffer::OwnedImpl bad_data("bad_handshake_data");
   client_connection->write(bad_data);

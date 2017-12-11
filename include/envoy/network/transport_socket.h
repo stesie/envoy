@@ -120,5 +120,7 @@ public:
 
 typedef std::unique_ptr<TransportSocket> TransportSocketPtr;
 
+typedef std::function<Network::TransportSocketPtr()> TransportSocketFactory;
+
 } // namespace Network
 } // namespace Envoy

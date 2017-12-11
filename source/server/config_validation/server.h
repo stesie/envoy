@@ -94,6 +94,9 @@ public:
                           Configuration::FactoryContext& context) override {
     return ProdListenerComponentFactory::createFilterFactoryList_(filters, context);
   }
+  Network::TransportSocketFactory createTransportSocketFactory(const envoy::api::v2::TransportSocket&) override {
+    return nullptr;
+  }
   Network::ListenSocketSharedPtr createListenSocket(Network::Address::InstanceConstSharedPtr,
                                                     bool) override {
     // Returned sockets are not currently used so we can return nothing here safely vs. a

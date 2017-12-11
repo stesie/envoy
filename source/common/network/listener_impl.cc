@@ -86,10 +86,13 @@ void ListenerImpl::listenCallback(evconnlistener*, evutil_socket_t fd, sockaddr*
 
 ListenerImpl::ListenerImpl(Network::ConnectionHandler& conn_handler,
                            Event::DispatcherImpl& dispatcher, ListenSocket& socket,
-                           ListenerCallbacks& cb, Stats::Scope& scope,
+                           ListenerCallbacks& cb,
+                           TransportSocketFactory transport_socket_factory,
+                           Stats::Scope& scope,
                            const Network::ListenerOptions& listener_options)
     : connection_handler_(conn_handler), dispatcher_(dispatcher), socket_(socket), cb_(cb),
-      proxy_protocol_(scope), options_(listener_options), listener_(nullptr) {
+      proxy_protocol_(scope), options_(listener_options),
+      transport_socket_factory_(transport_socket_factory), listener_(nullptr) {
 
   if (options_.bind_to_port_) {
     listener_.reset(
@@ -101,6 +104,13 @@ ListenerImpl::ListenerImpl(Network::ConnectionHandler& conn_handler,
     }
 
     evconnlistener_set_error_cb(listener_.get(), errorCallback);
+  }
+
+  // TODO(lizan): Remove
+  if (!transport_socket_factory_) {
+    transport_socket_factory_ = []() -> TransportSocketPtr {
+      return nullptr;
+    };
   }
 }
 
@@ -115,6 +125,7 @@ void ListenerImpl::newConnection(int fd, Address::InstanceConstSharedPtr remote_
                                  bool using_original_dst) {
   ConnectionPtr new_connection(new ConnectionImpl(dispatcher_, fd, remote_address, local_address,
                                                   Network::Address::InstanceConstSharedPtr(),
+                                                  transport_socket_factory_(),
                                                   using_original_dst, true));
   new_connection->setBufferLimits(options_.per_connection_buffer_limit_bytes_);
   cb_.onNewConnection(std::move(new_connection));

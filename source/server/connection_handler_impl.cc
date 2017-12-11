@@ -68,7 +68,7 @@ ConnectionHandlerImpl::ActiveListener::ActiveListener(
     Network::FilterChainFactory& factory, Stats::Scope& scope, uint64_t listener_tag,
     const Network::ListenerOptions& listener_options)
     : ActiveListener(
-          parent, parent.dispatcher_.createListener(parent, socket, *this, scope, listener_options),
+          parent, parent.dispatcher_.createListener(parent, socket, *this, nullptr, scope, listener_options),
           factory, scope, listener_tag) {}
 
 ConnectionHandlerImpl::ActiveListener::ActiveListener(ConnectionHandlerImpl& parent,

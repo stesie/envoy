@@ -60,7 +60,9 @@ HostImpl::createConnection(Event::Dispatcher& dispatcher, const ClusterInfo& clu
   Network::ClientConnectionPtr connection =
       cluster.sslContext() ? dispatcher.createSslClientConnection(*cluster.sslContext(), address,
                                                                   cluster.sourceAddress())
-                           : dispatcher.createClientConnection(address, cluster.sourceAddress());
+                           : dispatcher.createClientConnection(address,
+                                                               cluster.sourceAddress(),
+                                                               Envoy::Network::TransportSocketPtr());
   connection->setBufferLimits(cluster.perConnectionBufferLimitBytes());
   return connection;
 }

@@ -15,6 +15,7 @@
 #include "envoy/network/dns.h"
 #include "envoy/network/listen_socket.h"
 #include "envoy/network/listener.h"
+#include "envoy/network/transport_socket.h"
 #include "envoy/ssl/context.h"
 #include "envoy/stats/stats.h"
 
@@ -46,7 +47,8 @@ public:
    */
   virtual Network::ClientConnectionPtr
   createClientConnection(Network::Address::InstanceConstSharedPtr address,
-                         Network::Address::InstanceConstSharedPtr source_address) PURE;
+                         Network::Address::InstanceConstSharedPtr source_address,
+                         Network::TransportSocketPtr transport_socket) PURE;
 
   /**
    * Create an SSL client connection.
@@ -97,9 +99,12 @@ public:
    * @return Network::ListenerPtr a new listener that is owned by the caller.
    */
   virtual Network::ListenerPtr
-  createListener(Network::ConnectionHandler& conn_handler, Network::ListenSocket& socket,
-                 Network::ListenerCallbacks& cb, Stats::Scope& scope,
-                 const Network::ListenerOptions& listener_options) PURE;
+  createListener(Network::ConnectionHandler &conn_handler,
+                 Network::ListenSocket &socket,
+                 Network::ListenerCallbacks &cb,
+                 Network::TransportSocketFactory transport_socket_factory,
+                 Stats::Scope &scope,
+                 const Network::ListenerOptions &listener_options) PURE;
 
   /**
    * Create a listener on a specific port.

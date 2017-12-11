@@ -2,6 +2,7 @@
 
 #include "envoy/network/connection_handler.h"
 #include "envoy/network/listener.h"
+#include "envoy/network/transport_socket.h"
 
 #include "common/event/dispatcher_impl.h"
 #include "common/event/libevent.h"
@@ -19,7 +20,9 @@ namespace Network {
 class ListenerImpl : public Listener {
 public:
   ListenerImpl(Network::ConnectionHandler& conn_handler, Event::DispatcherImpl& dispatcher,
-               ListenSocket& socket, ListenerCallbacks& cb, Stats::Scope& scope,
+               ListenSocket& socket, ListenerCallbacks& cb,
+               TransportSocketFactory transport_socket_factory,
+               Stats::Scope& scope,
                const ListenerOptions& listener_options);
 
   /**
@@ -47,6 +50,7 @@ protected:
   ListenerCallbacks& cb_;
   ProxyProtocol proxy_protocol_;
   const ListenerOptions options_;
+  TransportSocketFactory transport_socket_factory_;
 
 private:
   static void errorCallback(evconnlistener* listener, void* context);
@@ -61,7 +65,7 @@ public:
   SslListenerImpl(Network::ConnectionHandler& conn_handler, Event::DispatcherImpl& dispatcher,
                   Ssl::Context& ssl_ctx, ListenSocket& socket, ListenerCallbacks& cb,
                   Stats::Scope& scope, const Network::ListenerOptions& listener_options)
-      : ListenerImpl(conn_handler, dispatcher, socket, cb, scope, listener_options),
+      : ListenerImpl(conn_handler, dispatcher, socket, cb, nullptr, scope, listener_options),
         ssl_ctx_(ssl_ctx) {}
 
   // ListenerImpl

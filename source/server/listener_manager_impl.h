@@ -37,6 +37,8 @@ public:
                           Configuration::FactoryContext& context) override {
     return createFilterFactoryList_(filters, context);
   }
+  Network::TransportSocketFactory
+  createTransportSocketFactory(const envoy::api::v2::TransportSocket& transport_socket) override;
   Network::ListenSocketSharedPtr
   createListenSocket(Network::Address::InstanceConstSharedPtr address, bool bind_to_port) override;
   DrainManagerPtr createDrainManager(envoy::api::v2::Listener::DrainType drain_type) override;

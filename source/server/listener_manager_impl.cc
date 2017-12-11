@@ -47,6 +47,22 @@ ProdListenerComponentFactory::createFilterFactoryList_(
   return ret;
 }
 
+Network::TransportSocketFactory
+ProdListenerComponentFactory::createTransportSocketFactory(
+    const envoy::api::v2::TransportSocket& transport_socket) {
+  const ProtobufTypes::String string_name = transport_socket.name();
+  ENVOY_LOG(debug, "  transport socket name: {}", string_name);
+  const Json::ObjectSharedPtr transport_socket_config =
+      MessageUtil::getJsonObjectFromMessage(transport_socket.config());
+
+  auto& factory =
+      Config::Utility::getAndCheckFactory<Configuration::DownstreamTransportSocketConfigFactory>(
+          string_name);
+
+  auto message = Config::Utility::translateToFactoryConfig(transport_socket, factory);
+  return factory.createTransportSocketFactory(*message);
+}
+
 Network::ListenSocketSharedPtr
 ProdListenerComponentFactory::createListenSocket(Network::Address::InstanceConstSharedPtr address,
                                                  bool bind_to_port) {

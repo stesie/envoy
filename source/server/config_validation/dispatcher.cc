@@ -7,7 +7,8 @@ namespace Event {
 
 Network::ClientConnectionPtr
 ValidationDispatcher::createClientConnection(Network::Address::InstanceConstSharedPtr,
-                                             Network::Address::InstanceConstSharedPtr) {
+                                             Network::Address::InstanceConstSharedPtr,
+                                             Network::TransportSocketPtr) {
   NOT_IMPLEMENTED;
 }
 
@@ -26,6 +27,7 @@ Network::DnsResolverSharedPtr ValidationDispatcher::createDnsResolver(
 Network::ListenerPtr ValidationDispatcher::createListener(Network::ConnectionHandler&,
                                                           Network::ListenSocket&,
                                                           Network::ListenerCallbacks&,
+                                                          Network::TransportSocketFactory,
                                                           Stats::Scope&,
                                                           const Network::ListenerOptions&) {
   NOT_IMPLEMENTED;

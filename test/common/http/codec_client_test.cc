@@ -179,10 +179,16 @@ public:
   CodecNetworkTest() {
     dispatcher_.reset(new Event::DispatcherImpl);
     upstream_listener_ =
-        dispatcher_->createListener(connection_handler_, socket_, listener_callbacks_, stats_store_,
+        dispatcher_->createListener(connection_handler_,
+                                    socket_,
+                                    listener_callbacks_,
+                                    nullptr,
+                                    stats_store_,
                                     Network::ListenerOptions::listenerOptionsWithBindToPort());
     Network::ClientConnectionPtr client_connection =
-        dispatcher_->createClientConnection(socket_.localAddress(), source_address_);
+        dispatcher_->createClientConnection(socket_.localAddress(),
+                                            source_address_,
+                                            Envoy::Network::TransportSocketPtr());
     client_connection_ = client_connection.get();
     codec_ = new Http::MockClientConnection();
     client_.reset(new CodecClientForTest(std::move(client_connection), codec_, nullptr, host_));

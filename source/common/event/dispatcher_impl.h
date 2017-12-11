@@ -9,6 +9,7 @@
 #include "envoy/event/deferred_deletable.h"
 #include "envoy/event/dispatcher.h"
 #include "envoy/network/connection_handler.h"
+#include "envoy/network/transport_socket.h"
 
 #include "common/common/logger.h"
 #include "common/common/thread.h"
@@ -35,7 +36,8 @@ public:
   void clearDeferredDeleteList() override;
   Network::ClientConnectionPtr
   createClientConnection(Network::Address::InstanceConstSharedPtr address,
-                         Network::Address::InstanceConstSharedPtr source_address) override;
+                           Network::Address::InstanceConstSharedPtr source_address,
+                           Network::TransportSocketPtr transport_socket) override;
   Network::ClientConnectionPtr
   createSslClientConnection(Ssl::ClientContext& ssl_ctx,
                             Network::Address::InstanceConstSharedPtr address,
@@ -45,10 +47,12 @@ public:
   FileEventPtr createFileEvent(int fd, FileReadyCb cb, FileTriggerType trigger,
                                uint32_t events) override;
   Filesystem::WatcherPtr createFilesystemWatcher() override;
-  Network::ListenerPtr createListener(Network::ConnectionHandler& conn_handler,
-                                      Network::ListenSocket& socket, Network::ListenerCallbacks& cb,
-                                      Stats::Scope& scope,
-                                      const Network::ListenerOptions& listener_options) override;
+  Network::ListenerPtr createListener(Network::ConnectionHandler &conn_handler,
+                                        Network::ListenSocket &socket,
+                                        Network::ListenerCallbacks &cb,
+                                        Network::TransportSocketFactory transport_socket_factory,
+                                        Stats::Scope &scope,
+                                        const Network::ListenerOptions &listener_options) override;
   Network::ListenerPtr createSslListener(Network::ConnectionHandler& conn_handler,
                                          Ssl::ServerContext& ssl_ctx, Network::ListenSocket& socket,
                                          Network::ListenerCallbacks& cb, Stats::Scope& scope,

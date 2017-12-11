@@ -82,11 +82,17 @@ public:
       dispatcher_.reset(new Event::DispatcherImpl);
     }
     listener_ =
-        dispatcher_->createListener(connection_handler_, socket_, listener_callbacks_, stats_store_,
+        dispatcher_->createListener(connection_handler_,
+                                    socket_,
+                                    listener_callbacks_,
+                                    nullptr,
+                                    stats_store_,
                                     Network::ListenerOptions::listenerOptionsWithBindToPort());
 
     client_connection_ =
-        dispatcher_->createClientConnection(socket_.localAddress(), source_address_);
+        dispatcher_->createClientConnection(socket_.localAddress(),
+                                            source_address_,
+                                            Envoy::Network::TransportSocketPtr());
     client_connection_->addConnectionCallbacks(client_callbacks_);
     EXPECT_EQ(nullptr, client_connection_->ssl());
     const Network::ClientConnection& const_connection = *client_connection_;
@@ -560,10 +566,16 @@ TEST_P(ConnectionImplTest, BindFailureTest) {
   }
   dispatcher_.reset(new Event::DispatcherImpl);
   listener_ =
-      dispatcher_->createListener(connection_handler_, socket_, listener_callbacks_, stats_store_,
+      dispatcher_->createListener(connection_handler_,
+                                  socket_,
+                                  listener_callbacks_,
+                                  nullptr,
+                                  stats_store_,
                                   Network::ListenerOptions::listenerOptionsWithBindToPort());
 
-  client_connection_ = dispatcher_->createClientConnection(socket_.localAddress(), source_address_);
+  client_connection_ = dispatcher_->createClientConnection(socket_.localAddress(),
+                                                           source_address_,
+                                                           Envoy::Network::TransportSocketPtr());
 
   MockConnectionStats connection_stats;
   client_connection_->setConnectionStats(connection_stats.toBufferStats());
@@ -579,14 +591,19 @@ public:
     const uint32_t buffer_size = 256 * 1024;
     dispatcher_.reset(new Event::DispatcherImpl);
     listener_ =
-        dispatcher_->createListener(connection_handler_, socket_, listener_callbacks_, stats_store_,
+        dispatcher_->createListener(connection_handler_,
+                                    socket_,
+                                    listener_callbacks_,
+                                    nullptr,
+                                    stats_store_,
                                     {.bind_to_port_ = true,
-                                     .use_proxy_proto_ = false,
-                                     .use_original_dst_ = false,
-                                     .per_connection_buffer_limit_bytes_ = read_buffer_limit});
+                                        .use_proxy_proto_ = false,
+                                        .use_original_dst_ = false,
+                                        .per_connection_buffer_limit_bytes_ = read_buffer_limit});
 
-    client_connection_ = dispatcher_->createClientConnection(
-        socket_.localAddress(), Network::Address::InstanceConstSharedPtr());
+    client_connection_ = dispatcher_->createClientConnection(socket_.localAddress(),
+                                                             Network::Address::InstanceConstSharedPtr(),
+                                                             Envoy::Network::TransportSocketPtr());
     client_connection_->addConnectionCallbacks(client_callbacks_);
     client_connection_->connect();
 
@@ -652,7 +669,9 @@ TEST_P(TcpClientConnectionImplTest, BadConnectNotConnRefused) {
     address = Utility::resolveUrl("tcp://[ff00::]:1");
   }
   ClientConnectionPtr connection =
-      dispatcher.createClientConnection(address, Network::Address::InstanceConstSharedPtr());
+      dispatcher.createClientConnection(address,
+                                        Network::Address::InstanceConstSharedPtr(),
+                                        Envoy::Network::TransportSocketPtr());
   connection->connect();
   connection->noDelay(true);
   connection->close(ConnectionCloseType::NoFlush);
@@ -663,10 +682,10 @@ TEST_P(TcpClientConnectionImplTest, BadConnectConnRefused) {
   Event::DispatcherImpl dispatcher;
   // Connecting to an invalid port on localhost will cause ECONNREFUSED which is a different code
   // path from other errors. Test this also.
-  ClientConnectionPtr connection = dispatcher.createClientConnection(
-      Utility::resolveUrl(
-          fmt::format("tcp://{}:1", Network::Test::getLoopbackAddressUrlString(GetParam()))),
-      Network::Address::InstanceConstSharedPtr());
+  ClientConnectionPtr connection = dispatcher.createClientConnection(Utility::resolveUrl(
+      fmt::format("tcp://{}:1", Network::Test::getLoopbackAddressUrlString(GetParam()))),
+                                                                     Network::Address::InstanceConstSharedPtr(),
+                                                                     Envoy::Network::TransportSocketPtr());
   connection->connect();
   connection->noDelay(true);
   dispatcher.run(Event::Dispatcher::RunType::Block);

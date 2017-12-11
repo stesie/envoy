@@ -92,7 +92,9 @@ Network::ClientConnectionPtr XfccIntegrationTest::makeClientConnection() {
   Network::Address::InstanceConstSharedPtr address =
       Network::Utility::resolveUrl("tcp://" + Network::Test::getLoopbackAddressUrlString(version_) +
                                    ":" + std::to_string(lookupPort("plain")));
-  return dispatcher_->createClientConnection(address, Network::Address::InstanceConstSharedPtr());
+  return dispatcher_->createClientConnection(address,
+                                             Network::Address::InstanceConstSharedPtr(),
+                                             Envoy::Network::TransportSocketPtr());
 }
 
 Network::ClientConnectionPtr XfccIntegrationTest::makeTlsClientConnection() {
