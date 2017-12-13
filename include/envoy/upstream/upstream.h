@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <envoy/network/transport_socket.h>
 
 #include "envoy/common/callback.h"
 #include "envoy/common/optional.h"
@@ -393,6 +394,12 @@ public:
    * @return the SSL context to use when communicating with the cluster.
    */
   virtual Ssl::ClientContext* sslContext() const PURE;
+
+  /**
+   * @return Network::TransportSocketFactory& the factory of trasnprot socket to use when
+   *         communicating with the cluster.
+   */
+  virtual Network::TransportSocketFactory& transportSocketFactory() const PURE;
 
   /**
    * @return ClusterStats& strongly named stats for this cluster.

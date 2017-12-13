@@ -76,5 +76,8 @@ std::string RawBufferSocket::protocol() const { return EMPTY_STRING; }
 
 void RawBufferSocket::onConnected() { callbacks_->raiseEvent(ConnectionEvent::Connected); }
 
+TransportSocketPtr RawBufferSocketFactory::createTransportSocket() const {
+  return TransportSocketPtr{new RawBufferSocket};
+}
 } // namespace Network
 } // namespace Envoy

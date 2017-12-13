@@ -3,6 +3,8 @@
 #include "envoy/buffer/buffer.h"
 #include "envoy/common/pure.h"
 #include "envoy/network/connection.h"
+#include "envoy/ssl/context_manager.h"
+#include "envoy/stats/stats.h"
 
 namespace Envoy {
 namespace Network {
@@ -119,6 +121,28 @@ public:
 };
 
 typedef std::unique_ptr<TransportSocket> TransportSocketPtr;
+
+/**
+ * A factory for creating transport socket. It will be associated to filter chains and clusters.
+ */
+class TransportSocketFactory {
+public:
+  virtual ~TransportSocketFactory() {}
+
+  virtual TransportSocketPtr createTransportSocket() const PURE;
+};
+
+typedef std::unique_ptr<TransportSocketFactory> TransportSocketFactoryPtr;
+
+class TransportSocketFactoryContext {
+public:
+  virtual ~TransportSocketFactoryContext() {}
+
+  virtual Ssl::ContextManager& sslContextManager() PURE;
+
+  virtual Stats::Scope& statsScope() const PURE;
+};
+
 
 } // namespace Network
 } // namespace Envoy

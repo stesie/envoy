@@ -26,6 +26,7 @@ envoy_cc_library(
     external_deps = ["ssl"],
     deps = [
         ":context_lib",
+        ":context_config_lib",
         "//include/envoy/network:transport_socket_interface",
         "//source/common/common:assert_lib",
         "//source/common/common:empty_string",

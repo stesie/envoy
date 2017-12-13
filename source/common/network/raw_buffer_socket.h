@@ -23,5 +23,11 @@ private:
   TransportSocketCallbacks* callbacks_{};
 };
 
+class RawBufferSocketFactory : public TransportSocketFactory {
+ public:
+  // Network::TransportSocketFactory
+  TransportSocketPtr createTransportSocket() const override;
+};
+
 } // namespace Network
 } // namespace Envoy

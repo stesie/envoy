@@ -302,6 +302,7 @@ public:
   const std::string& name() const override { return name_; }
   ResourceManager& resourceManager(ResourcePriority priority) const override;
   Ssl::ClientContext* sslContext() const override { return ssl_ctx_.get(); }
+  Network::TransportSocketFactory& transportSocketFactory() const override { return *transport_socket_factory_; }
   ClusterStats& stats() const override { return stats_; }
   Stats::Scope& statsScope() const override { return *stats_scope_; }
   ClusterLoadReportStats& loadReportStats() const override { return load_report_stats_; }
@@ -335,6 +336,7 @@ private:
   Stats::IsolatedStoreImpl load_report_stats_store_;
   mutable ClusterLoadReportStats load_report_stats_;
   Ssl::ClientContextPtr ssl_ctx_;
+  Network::TransportSocketFactoryPtr transport_socket_factory_;
   const uint64_t features_;
   const Http::Http2Settings http2_settings_;
   mutable ResourceManagers resource_managers_;
