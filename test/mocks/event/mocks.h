@@ -31,9 +31,10 @@ public:
 
   Network::ClientConnectionPtr
   createClientConnection(Network::Address::InstanceConstSharedPtr address,
-                           Network::Address::InstanceConstSharedPtr source_address,
-                           Network::TransportSocketPtr&& transport_socket) override {
-    return Network::ClientConnectionPtr{createClientConnection_(address, source_address, transport_socket)};
+                         Network::Address::InstanceConstSharedPtr source_address,
+                         Network::TransportSocketPtr&& transport_socket) override {
+    return Network::ClientConnectionPtr{
+        createClientConnection_(address, source_address, transport_socket)};
   }
 
   Network::ClientConnectionPtr

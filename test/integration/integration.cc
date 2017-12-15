@@ -119,10 +119,10 @@ IntegrationTcpClient::IntegrationTcpClient(Event::Dispatcher& dispatcher,
         return client_write_buffer_;
       }));
 
-  connection_ = dispatcher.createClientConnection(Network::Utility::resolveUrl(
-      fmt::format("tcp://{}:{}", Network::Test::getLoopbackAddressUrlString(version), port)),
-                                                  Network::Address::InstanceConstSharedPtr(),
-                                                  Network::Test::createRawBufferSocket());
+  connection_ = dispatcher.createClientConnection(
+      Network::Utility::resolveUrl(
+          fmt::format("tcp://{}:{}", Network::Test::getLoopbackAddressUrlString(version), port)),
+      Network::Address::InstanceConstSharedPtr(), Network::Test::createRawBufferSocket());
 
   ON_CALL(*client_write_buffer_, drain(_))
       .WillByDefault(testing::Invoke(client_write_buffer_, &MockWatermarkBuffer::baseDrain));
@@ -191,10 +191,10 @@ BaseIntegrationTest::BaseIntegrationTest(Network::Address::IpVersion version,
 }
 
 Network::ClientConnectionPtr BaseIntegrationTest::makeClientConnection(uint32_t port) {
-  return dispatcher_->createClientConnection(Network::Utility::resolveUrl(
-      fmt::format("tcp://{}:{}", Network::Test::getLoopbackAddressUrlString(version_), port)),
-                                             Network::Address::InstanceConstSharedPtr(),
-                                             Network::Test::createRawBufferSocket());
+  return dispatcher_->createClientConnection(
+      Network::Utility::resolveUrl(
+          fmt::format("tcp://{}:{}", Network::Test::getLoopbackAddressUrlString(version_), port)),
+      Network::Address::InstanceConstSharedPtr(), Network::Test::createRawBufferSocket());
 }
 
 void BaseIntegrationTest::initialize() {

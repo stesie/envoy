@@ -58,10 +58,8 @@ Host::CreateConnectionData HostImpl::createConnection(Event::Dispatcher& dispatc
 Network::ClientConnectionPtr
 HostImpl::createConnection(Event::Dispatcher& dispatcher, const ClusterInfo& cluster,
                            Network::Address::InstanceConstSharedPtr address) {
-  Network::ClientConnectionPtr connection =
-      dispatcher.createClientConnection(address,
-                                        cluster.sourceAddress(),
-                                        cluster.transportSocketFactory().createTransportSocket());
+  Network::ClientConnectionPtr connection = dispatcher.createClientConnection(
+      address, cluster.sourceAddress(), cluster.transportSocketFactory().createTransportSocket());
   connection->setBufferLimits(cluster.perConnectionBufferLimitBytes());
   return connection;
 }
@@ -93,18 +91,13 @@ ClusterLoadReportStats ClusterInfoImpl::generateLoadReportStats(Stats::Scope& sc
 
 // TODO(lizan): revisit
 class ClusterInfoFactoryContext : public Network::TransportSocketFactoryContext {
- public:
+public:
   ClusterInfoFactoryContext(Ssl::ContextManager& ssl_context_manager, Stats::Scope& stats_scope)
-      : ssl_context_manager_(ssl_context_manager),
-        stats_scope_(stats_scope) {}
-  Ssl::ContextManager &sslContextManager() override {
-    return ssl_context_manager_;
-  }
-  Stats::Scope &statsScope() const override {
-    return stats_scope_;
-  }
+      : ssl_context_manager_(ssl_context_manager), stats_scope_(stats_scope) {}
+  Ssl::ContextManager& sslContextManager() override { return ssl_context_manager_; }
+  Stats::Scope& statsScope() const override { return stats_scope_; }
 
- private:
+private:
   Ssl::ContextManager& ssl_context_manager_;
   Stats::Scope& stats_scope_;
 };
@@ -135,7 +128,8 @@ ClusterInfoImpl::ClusterInfoImpl(const envoy::api::v2::Cluster& config,
   if (config.has_tls_context()) {
     Ssl::ClientContextConfigImpl context_config(config.tls_context());
     ClusterInfoFactoryContext factory_context(ssl_context_manager, *stats_scope_);
-    transport_socket_factory_.reset(new Ssl::ClientSslSocketFactory(context_config, factory_context));
+    transport_socket_factory_.reset(
+        new Ssl::ClientSslSocketFactory(context_config, factory_context));
   } else {
     transport_socket_factory_.reset(new Network::RawBufferSocketFactory);
   }

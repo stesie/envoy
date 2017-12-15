@@ -303,16 +303,14 @@ std::string SslSocket::protocol() const {
   return std::string(reinterpret_cast<const char*>(proto), proto_len);
 }
 
-
-ClientSslSocketFactory::ClientSslSocketFactory(const ClientContextConfig &config,
-                                               Network::TransportSocketFactoryContext &context)
-    : ssl_ctx_(
-        context.sslContextManager().createSslClientContext(context.statsScope(), config)) {}
+ClientSslSocketFactory::ClientSslSocketFactory(const ClientContextConfig& config,
+                                               Network::TransportSocketFactoryContext& context)
+    : ssl_ctx_(context.sslContextManager().createSslClientContext(context.statsScope(), config)) {}
 
 Network::TransportSocketPtr ClientSslSocketFactory::createTransportSocket() const {
   return Network::TransportSocketPtr{new Ssl::SslSocket(*ssl_ctx_, Ssl::InitialState::Client)};
 }
-const std::string &ClientSslSocketFactory::httpScheme() const {
+const std::string& ClientSslSocketFactory::httpScheme() const {
   return Http::Headers::get().SchemeValues.Https;
 }
 

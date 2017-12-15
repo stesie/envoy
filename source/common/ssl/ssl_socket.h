@@ -52,11 +52,12 @@ private:
 
 class ClientSslSocketFactory : public Network::TransportSocketFactory {
 public:
-  ClientSslSocketFactory(const ClientContextConfig &config,
-                                               Network::TransportSocketFactoryContext &context);
+  ClientSslSocketFactory(const ClientContextConfig& config,
+                         Network::TransportSocketFactoryContext& context);
   Network::TransportSocketPtr createTransportSocket() const override;
-  const std::string &httpScheme() const override;
- private:
+  const std::string& httpScheme() const override;
+
+private:
   ClientContextPtr ssl_ctx_;
 };
 

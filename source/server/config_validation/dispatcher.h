@@ -14,10 +14,9 @@ namespace Event {
  */
 class ValidationDispatcher : public DispatcherImpl {
 public:
-  Network::ClientConnectionPtr
-      createClientConnection(Network::Address::InstanceConstSharedPtr,
-                             Network::Address::InstanceConstSharedPtr,
-                             Network::TransportSocketPtr&&) override;
+  Network::ClientConnectionPtr createClientConnection(Network::Address::InstanceConstSharedPtr,
+                                                      Network::Address::InstanceConstSharedPtr,
+                                                      Network::TransportSocketPtr&&) override;
   Network::ClientConnectionPtr
   createSslClientConnection(Ssl::ClientContext&, Network::Address::InstanceConstSharedPtr,
                             Network::Address::InstanceConstSharedPtr) override;

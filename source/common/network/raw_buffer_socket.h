@@ -24,10 +24,10 @@ private:
 };
 
 class RawBufferSocketFactory : public TransportSocketFactory {
- public:
+public:
   // Network::TransportSocketFactory
   TransportSocketPtr createTransportSocket() const override;
-  const std::string &httpScheme() const override;
+  const std::string& httpScheme() const override;
 };
 
 } // namespace Network

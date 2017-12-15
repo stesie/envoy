@@ -25,8 +25,8 @@ envoy_cc_library(
     hdrs = ["ssl_socket.h"],
     external_deps = ["ssl"],
     deps = [
-        ":context_lib",
         ":context_config_lib",
+        ":context_lib",
         "//include/envoy/network:transport_socket_interface",
         "//source/common/common:assert_lib",
         "//source/common/common:empty_string",

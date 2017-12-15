@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "envoy/network/transport_socket.h"
 #include "envoy/network/address.h"
+#include "envoy/network/transport_socket.h"
 
 namespace Envoy {
 namespace Network {

@@ -145,6 +145,5 @@ public:
   virtual Stats::Scope& statsScope() const PURE;
 };
 
-
 } // namespace Network
 } // namespace Envoy

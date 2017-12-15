@@ -1,5 +1,7 @@
 #pragma once
 
+#include <envoy/network/transport_socket.h>
+
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -7,7 +9,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <envoy/network/transport_socket.h>
 
 #include "envoy/common/callback.h"
 #include "envoy/common/optional.h"

@@ -80,7 +80,7 @@ void RawBufferSocket::onConnected() { callbacks_->raiseEvent(ConnectionEvent::Co
 TransportSocketPtr RawBufferSocketFactory::createTransportSocket() const {
   return TransportSocketPtr{new RawBufferSocket};
 }
-const std::string &RawBufferSocketFactory::httpScheme() const {
+const std::string& RawBufferSocketFactory::httpScheme() const {
   return Http::Headers::get().SchemeValues.Http;
 }
 } // namespace Network
