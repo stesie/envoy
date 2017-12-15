@@ -70,10 +70,11 @@ void DispatcherImpl::clearDeferredDeleteList() {
 
 Network::ClientConnectionPtr
 DispatcherImpl::createClientConnection(Network::Address::InstanceConstSharedPtr address,
-                                       Network::Address::InstanceConstSharedPtr source_address) {
+                                       Network::Address::InstanceConstSharedPtr source_address,
+                                       Network::TransportSocketPtr &&transport_socket) {
   ASSERT(isThreadSafe());
   return Network::ClientConnectionPtr{
-      new Network::ClientConnectionImpl(*this, address, source_address)};
+      new Network::ClientConnectionImpl(*this, address, source_address, std::move(transport_socket))};
 }
 
 Network::ClientConnectionPtr

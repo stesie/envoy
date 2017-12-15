@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "envoy/network/transport_socket.h"
 #include "envoy/network/address.h"
 
 namespace Envoy {
@@ -95,6 +96,8 @@ bool supportsIpVersion(const Address::IpVersion version);
  */
 std::pair<Address::InstanceConstSharedPtr, int> bindFreeLoopbackPort(Address::IpVersion version,
                                                                      Address::SocketType type);
+
+TransportSocketPtr createRawBufferSocket();
 
 } // namespace Test
 } // namespace Network

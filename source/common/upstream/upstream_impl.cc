@@ -20,6 +20,7 @@
 #include "common/config/tls_context_json.h"
 #include "common/http/utility.h"
 #include "common/network/address_impl.h"
+#include "common/network/raw_buffer_socket.h"
 #include "common/network/resolver_impl.h"
 #include "common/network/utility.h"
 #include "common/protobuf/protobuf.h"
@@ -58,9 +59,9 @@ Network::ClientConnectionPtr
 HostImpl::createConnection(Event::Dispatcher& dispatcher, const ClusterInfo& cluster,
                            Network::Address::InstanceConstSharedPtr address) {
   Network::ClientConnectionPtr connection =
-      cluster.sslContext() ? dispatcher.createSslClientConnection(*cluster.sslContext(), address,
-                                                                  cluster.sourceAddress())
-                           : dispatcher.createClientConnection(address, cluster.sourceAddress());
+      dispatcher.createClientConnection(address,
+                                        cluster.sourceAddress(),
+                                        cluster.transportSocketFactory().createTransportSocket());
   connection->setBufferLimits(cluster.perConnectionBufferLimitBytes());
   return connection;
 }
@@ -90,6 +91,24 @@ ClusterLoadReportStats ClusterInfoImpl::generateLoadReportStats(Stats::Scope& sc
   return {ALL_CLUSTER_LOAD_REPORT_STATS(POOL_COUNTER(scope))};
 }
 
+// TODO(lizan): revisit
+class ClusterInfoFactoryContext : public Network::TransportSocketFactoryContext {
+ public:
+  ClusterInfoFactoryContext(Ssl::ContextManager& ssl_context_manager, Stats::Scope& stats_scope)
+      : ssl_context_manager_(ssl_context_manager),
+        stats_scope_(stats_scope) {}
+  Ssl::ContextManager &sslContextManager() override {
+    return ssl_context_manager_;
+  }
+  Stats::Scope &statsScope() const override {
+    return stats_scope_;
+  }
+
+ private:
+  Ssl::ContextManager& ssl_context_manager_;
+  Stats::Scope& stats_scope_;
+};
+
 ClusterInfoImpl::ClusterInfoImpl(const envoy::api::v2::Cluster& config,
                                  const Network::Address::InstanceConstSharedPtr source_address,
                                  Runtime::Loader& runtime, Stats::Store& stats,
@@ -112,10 +131,13 @@ ClusterInfoImpl::ClusterInfoImpl(const envoy::api::v2::Cluster& config,
       lb_ring_hash_config_(envoy::api::v2::Cluster::RingHashLbConfig(config.ring_hash_lb_config())),
       added_via_api_(added_via_api),
       lb_subset_(LoadBalancerSubsetInfoImpl(config.lb_subset_config())) {
-  ssl_ctx_ = nullptr;
+
   if (config.has_tls_context()) {
     Ssl::ClientContextConfigImpl context_config(config.tls_context());
-    ssl_ctx_ = ssl_context_manager.createSslClientContext(*stats_scope_, context_config);
+    ClusterInfoFactoryContext factory_context(ssl_context_manager, *stats_scope_);
+    transport_socket_factory_.reset(new Ssl::ClientSslSocketFactory(context_config, factory_context));
+  } else {
+    transport_socket_factory_.reset(new Network::RawBufferSocketFactory);
   }
 
   switch (config.lb_policy()) {

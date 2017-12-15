@@ -14,6 +14,7 @@
 #include "envoy/network/connection_handler.h"
 #include "envoy/network/dns.h"
 #include "envoy/network/listener.h"
+#include "envoy/network/transport_socket.h"
 #include "envoy/ssl/context.h"
 
 #include "test/mocks/buffer/mocks.h"
@@ -30,8 +31,9 @@ public:
 
   Network::ClientConnectionPtr
   createClientConnection(Network::Address::InstanceConstSharedPtr address,
-                         Network::Address::InstanceConstSharedPtr source_address) override {
-    return Network::ClientConnectionPtr{createClientConnection_(address, source_address)};
+                           Network::Address::InstanceConstSharedPtr source_address,
+                           Network::TransportSocketPtr&& transport_socket) override {
+    return Network::ClientConnectionPtr{createClientConnection_(address, source_address, transport_socket)};
   }
 
   Network::ClientConnectionPtr
@@ -82,9 +84,10 @@ public:
 
   // Event::Dispatcher
   MOCK_METHOD0(clearDeferredDeleteList, void());
-  MOCK_METHOD2(createClientConnection_,
+  MOCK_METHOD3(createClientConnection_,
                Network::ClientConnection*(Network::Address::InstanceConstSharedPtr address,
-                                          Network::Address::InstanceConstSharedPtr source_address));
+                                          Network::Address::InstanceConstSharedPtr source_address,
+                                          Network::TransportSocketPtr& transport_socket));
   MOCK_METHOD3(createSslClientConnection_,
                Network::ClientConnection*(Ssl::ClientContext& ssl_ctx,
                                           Network::Address::InstanceConstSharedPtr address,

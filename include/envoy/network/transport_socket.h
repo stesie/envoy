@@ -129,6 +129,8 @@ class TransportSocketFactory {
 public:
   virtual ~TransportSocketFactory() {}
 
+  virtual const std::string& httpScheme() const PURE;
+
   virtual TransportSocketPtr createTransportSocket() const PURE;
 };
 

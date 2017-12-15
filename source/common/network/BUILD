@@ -146,6 +146,7 @@ envoy_cc_library(
         "//include/envoy/network:transport_socket_interface",
         "//source/common/buffer:buffer_lib",
         "//source/common/common:empty_string",
+        "//source/common/http:headers_lib",
     ],
 )
 

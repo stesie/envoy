@@ -63,10 +63,10 @@ IntegrationUtil::makeSingleRequest(uint32_t port, const std::string& method, con
       cluster, fmt::format("tcp://{}:80", Network::Test::getLoopbackAddressUrlString(version)))};
   Http::CodecClientProd client(
       type,
-      dispatcher->createClientConnection(
-          Network::Utility::resolveUrl(fmt::format(
-              "tcp://{}:{}", Network::Test::getLoopbackAddressUrlString(version), port)),
-          Network::Address::InstanceConstSharedPtr()),
+      dispatcher->createClientConnection(Network::Utility::resolveUrl(fmt::format(
+          "tcp://{}:{}", Network::Test::getLoopbackAddressUrlString(version), port)),
+                                         Network::Address::InstanceConstSharedPtr(),
+                                         Network::Test::createRawBufferSocket()),
       host_description);
   BufferingStreamDecoderPtr response(new BufferingStreamDecoder([&]() -> void { client.close(); }));
   Http::StreamEncoder& encoder = client.newStream(*response);
@@ -92,10 +92,10 @@ RawConnectionDriver::RawConnectionDriver(uint32_t port, Buffer::Instance& initia
                                          Network::Address::IpVersion version) {
   api_.reset(new Api::Impl(std::chrono::milliseconds(10000)));
   dispatcher_ = api_->allocateDispatcher();
-  client_ = dispatcher_->createClientConnection(
-      Network::Utility::resolveUrl(
-          fmt::format("tcp://{}:{}", Network::Test::getLoopbackAddressUrlString(version), port)),
-      Network::Address::InstanceConstSharedPtr());
+  client_ = dispatcher_->createClientConnection(Network::Utility::resolveUrl(
+      fmt::format("tcp://{}:{}", Network::Test::getLoopbackAddressUrlString(version), port)),
+                                                Network::Address::InstanceConstSharedPtr(),
+                                                Network::Test::createRawBufferSocket());
   client_->addReadFilter(Network::ReadFilterSharedPtr{new ForwardingFilter(*this, data_callback)});
   client_->write(initial_data);
   client_->connect();

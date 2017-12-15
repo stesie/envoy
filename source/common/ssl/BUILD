@@ -31,6 +31,7 @@ envoy_cc_library(
         "//source/common/common:assert_lib",
         "//source/common/common:empty_string",
         "//source/common/common:logger_lib",
+        "//source/common/http:headers_lib",
     ],
 )
 

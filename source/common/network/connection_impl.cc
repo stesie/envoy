@@ -536,9 +536,10 @@ void ConnectionImpl::updateWriteBufferStats(uint64_t num_written, uint64_t new_s
 
 ClientConnectionImpl::ClientConnectionImpl(
     Event::Dispatcher& dispatcher, Address::InstanceConstSharedPtr address,
-    const Network::Address::InstanceConstSharedPtr source_address)
+    const Network::Address::InstanceConstSharedPtr source_address,
+    Network::TransportSocketPtr&& transport_socket)
     : ConnectionImpl(dispatcher, address->socket(Address::SocketType::Stream), address, nullptr,
-                     source_address, false, false) {}
+                     source_address, std::move(transport_socket), false, false) {}
 
 } // namespace Network
 } // namespace Envoy

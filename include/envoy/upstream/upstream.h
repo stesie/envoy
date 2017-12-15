@@ -391,11 +391,6 @@ public:
   virtual ResourceManager& resourceManager(ResourcePriority priority) const PURE;
 
   /**
-   * @return the SSL context to use when communicating with the cluster.
-   */
-  virtual Ssl::ClientContext* sslContext() const PURE;
-
-  /**
    * @return Network::TransportSocketFactory& the factory of trasnprot socket to use when
    *         communicating with the cluster.
    */

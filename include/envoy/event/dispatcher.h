@@ -15,7 +15,7 @@
 #include "envoy/network/dns.h"
 #include "envoy/network/listen_socket.h"
 #include "envoy/network/listener.h"
-#include "envoy/ssl/context.h"
+#include "envoy/network/transport_socket.h"
 #include "envoy/stats/stats.h"
 
 namespace Envoy {
@@ -46,7 +46,8 @@ public:
    */
   virtual Network::ClientConnectionPtr
   createClientConnection(Network::Address::InstanceConstSharedPtr address,
-                         Network::Address::InstanceConstSharedPtr source_address) PURE;
+                         Network::Address::InstanceConstSharedPtr source_address,
+                         Network::TransportSocketPtr&& transport_socket) PURE;
 
   /**
    * Create an SSL client connection.
