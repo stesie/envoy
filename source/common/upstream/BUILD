@@ -300,6 +300,7 @@ envoy_cc_library(
         "//include/envoy/event:timer_interface",
         "//include/envoy/network:dns_interface",
         "//include/envoy/ssl:context_interface",
+        "//include/envoy/server:transport_socket_config_interface",
         "//include/envoy/upstream:health_checker_interface",
         "//source/common/common:enum_to_int",
         "//source/common/common:utility_lib",

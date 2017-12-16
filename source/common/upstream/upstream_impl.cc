@@ -7,6 +7,8 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include "envoy/server/transport_socket_config.h"
+#include "common/config/utility.h"
 
 #include "envoy/event/dispatcher.h"
 #include "envoy/event/timer.h"
@@ -125,14 +127,24 @@ ClusterInfoImpl::ClusterInfoImpl(const envoy::api::v2::Cluster& config,
       added_via_api_(added_via_api),
       lb_subset_(LoadBalancerSubsetInfoImpl(config.lb_subset_config())) {
 
-  if (config.has_tls_context()) {
-    Ssl::ClientContextConfigImpl context_config(config.tls_context());
-    ClusterInfoFactoryContext factory_context(ssl_context_manager, *stats_scope_);
-    transport_socket_factory_.reset(
-        new Ssl::ClientSslSocketFactory(context_config, factory_context));
-  } else {
-    transport_socket_factory_.reset(new Network::RawBufferSocketFactory);
+  // TODO(lizan): move this part to appropriate place
+  // Translate tls_context to transport_socket
+  ClusterInfoFactoryContext factory_context(ssl_context_manager, *stats_scope_);
+
+  auto transport_socket = config.transport_socket();
+  if (!config.has_transport_socket()) {
+    if (config.has_tls_context()) {
+      transport_socket.set_name(Config::TransportSocketNames::get().BORINGSSL);
+      MessageUtil::jsonConvert(config.tls_context(), *transport_socket.mutable_config());
+    } else {
+      transport_socket.set_name(Config::TransportSocketNames::get().RAW_BUFFER);
+    }
   }
+
+  auto& config_factory = Config::Utility::getAndCheckFactory<Server::Configuration::UpstreamTransportSocketConfigFactory>(
+      transport_socket.name());
+  ProtobufTypes::MessagePtr message = Config::Utility::translateToFactoryConfig(transport_socket, config_factory);
+  transport_socket_factory_ = config_factory.createTransportSocketFactory(*message, factory_context);
 
   switch (config.lb_policy()) {
   case envoy::api::v2::Cluster::ROUND_ROBIN:
