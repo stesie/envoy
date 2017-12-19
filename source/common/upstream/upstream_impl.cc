@@ -7,12 +7,11 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
-#include "envoy/server/transport_socket_config.h"
-#include "common/config/utility.h"
 
 #include "envoy/event/dispatcher.h"
 #include "envoy/event/timer.h"
 #include "envoy/network/dns.h"
+#include "envoy/server/transport_socket_config.h"
 #include "envoy/ssl/context.h"
 #include "envoy/upstream/health_checker.h"
 
@@ -20,6 +19,7 @@
 #include "common/common/utility.h"
 #include "common/config/protocol_json.h"
 #include "common/config/tls_context_json.h"
+#include "common/config/utility.h"
 #include "common/http/utility.h"
 #include "common/network/address_impl.h"
 #include "common/network/raw_buffer_socket.h"
@@ -141,10 +141,12 @@ ClusterInfoImpl::ClusterInfoImpl(const envoy::api::v2::Cluster& config,
     }
   }
 
-  auto& config_factory = Config::Utility::getAndCheckFactory<Server::Configuration::UpstreamTransportSocketConfigFactory>(
-      transport_socket.name());
-  ProtobufTypes::MessagePtr message = Config::Utility::translateToFactoryConfig(transport_socket, config_factory);
-  transport_socket_factory_ = config_factory.createTransportSocketFactory(*message, factory_context);
+  auto& config_factory = Config::Utility::getAndCheckFactory<
+      Server::Configuration::UpstreamTransportSocketConfigFactory>(transport_socket.name());
+  ProtobufTypes::MessagePtr message =
+      Config::Utility::translateToFactoryConfig(transport_socket, config_factory);
+  transport_socket_factory_ =
+      config_factory.createTransportSocketFactory(*message, factory_context);
 
   switch (config.lb_policy()) {
   case envoy::api::v2::Cluster::ROUND_ROBIN:
