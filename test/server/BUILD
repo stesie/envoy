@@ -26,6 +26,7 @@ envoy_cc_test(
         "//source/common/upstream:cluster_manager_lib",
         "//source/server:configuration_lib",
         "//source/server/config/stats:statsd_lib",
+        "//source/server/config/network:raw_buffer_socket_lib",
         "//test/mocks:common_lib",
         "//test/mocks/network:network_mocks",
         "//test/mocks/server:server_mocks",
