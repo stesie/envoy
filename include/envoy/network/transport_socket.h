@@ -136,14 +136,5 @@ public:
 
 typedef std::unique_ptr<TransportSocketFactory> TransportSocketFactoryPtr;
 
-class TransportSocketFactoryContext {
-public:
-  virtual ~TransportSocketFactoryContext() {}
-
-  virtual Ssl::ContextManager& sslContextManager() PURE;
-
-  virtual Stats::Scope& statsScope() const PURE;
-};
-
 } // namespace Network
 } // namespace Envoy

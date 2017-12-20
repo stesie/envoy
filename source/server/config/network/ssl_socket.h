@@ -29,7 +29,7 @@ class UpstreamSslSocketFactory : public UpstreamTransportSocketConfigFactory,
 public:
   Network::TransportSocketFactoryPtr
   createTransportSocketFactory(const Protobuf::Message& config,
-                               Network::TransportSocketFactoryContext& context) override;
+                               TransportSocketFactoryContext& context) override;
   ProtobufTypes::MessagePtr createEmptyConfigProto() override;
 };
 

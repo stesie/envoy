@@ -92,7 +92,7 @@ ClusterLoadReportStats ClusterInfoImpl::generateLoadReportStats(Stats::Scope& sc
 }
 
 // TODO(lizan): revisit
-class ClusterInfoFactoryContext : public Network::TransportSocketFactoryContext {
+class ClusterInfoFactoryContext : public Server::Configuration::TransportSocketFactoryContext {
 public:
   ClusterInfoFactoryContext(Ssl::ContextManager& ssl_context_manager, Stats::Scope& stats_scope)
       : ssl_context_manager_(ssl_context_manager), stats_scope_(stats_scope) {}

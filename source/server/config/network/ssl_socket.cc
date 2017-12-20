@@ -25,12 +25,13 @@ ProtobufTypes::MessagePtr DownstreamSslSocketFactory::createEmptyConfigProto() {
 static Registry::RegisterFactory<DownstreamSslSocketFactory, DownstreamTransportSocketConfigFactory>
     downstream_registered_;
 */
-Network::TransportSocketFactoryPtr UpstreamSslSocketFactory::createTransportSocketFactory(
-    const Protobuf::Message& message, Network::TransportSocketFactoryContext& context) {
+Network::TransportSocketFactoryPtr
+UpstreamSslSocketFactory::createTransportSocketFactory(const Protobuf::Message& message,
+                                                       TransportSocketFactoryContext& context) {
   return Network::TransportSocketFactoryPtr{new Ssl::ClientSslSocketFactory(
       Ssl::ClientContextConfigImpl(
           MessageUtil::downcastAndValidate<const envoy::api::v2::UpstreamTlsContext&>(message)),
-      context)};
+      context.sslContextManager(), context.statsScope())};
 }
 
 ProtobufTypes::MessagePtr UpstreamSslSocketFactory::createEmptyConfigProto() {

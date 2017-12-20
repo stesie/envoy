@@ -304,8 +304,9 @@ std::string SslSocket::protocol() const {
 }
 
 ClientSslSocketFactory::ClientSslSocketFactory(const ClientContextConfig& config,
-                                               Network::TransportSocketFactoryContext& context)
-    : ssl_ctx_(context.sslContextManager().createSslClientContext(context.statsScope(), config)) {}
+                                               Ssl::ContextManager& manager,
+                                               Stats::Scope& stats_scope)
+    : ssl_ctx_(manager.createSslClientContext(stats_scope, config)) {}
 
 Network::TransportSocketPtr ClientSslSocketFactory::createTransportSocket() const {
   return Network::TransportSocketPtr{new Ssl::SslSocket(*ssl_ctx_, Ssl::InitialState::Client)};

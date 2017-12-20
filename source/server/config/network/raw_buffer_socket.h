@@ -17,7 +17,7 @@ public:
   std::string name() const override { return Config::TransportSocketNames::get().RAW_BUFFER; }
   Network::TransportSocketFactoryPtr
   createTransportSocketFactory(const Protobuf::Message& config,
-                               Network::TransportSocketFactoryContext& context) override;
+                               TransportSocketFactoryContext& context) override;
   ProtobufTypes::MessagePtr createEmptyConfigProto() override;
 };
 

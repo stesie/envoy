@@ -77,15 +77,6 @@ DispatcherImpl::createClientConnection(Network::Address::InstanceConstSharedPtr 
       *this, address, source_address, std::move(transport_socket))};
 }
 
-Network::ClientConnectionPtr
-DispatcherImpl::createSslClientConnection(Ssl::ClientContext& ssl_ctx,
-                                          Network::Address::InstanceConstSharedPtr address,
-                                          Network::Address::InstanceConstSharedPtr source_address) {
-  ASSERT(isThreadSafe());
-  return Network::ClientConnectionPtr{
-      new Ssl::ClientConnectionImpl(*this, ssl_ctx, address, source_address)};
-}
-
 Network::DnsResolverSharedPtr DispatcherImpl::createDnsResolver(
     const std::vector<Network::Address::InstanceConstSharedPtr>& resolvers) {
   ASSERT(isThreadSafe());

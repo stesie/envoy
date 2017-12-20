@@ -52,8 +52,8 @@ private:
 
 class ClientSslSocketFactory : public Network::TransportSocketFactory {
 public:
-  ClientSslSocketFactory(const ClientContextConfig& config,
-                         Network::TransportSocketFactoryContext& context);
+  ClientSslSocketFactory(const ClientContextConfig& config, Ssl::ContextManager& manager,
+                         Stats::Scope& stats_scope);
   Network::TransportSocketPtr createTransportSocket() const override;
   const std::string& httpScheme() const override;
 

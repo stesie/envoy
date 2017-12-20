@@ -15,6 +15,7 @@
 #include "common/common/logger.h"
 #include "common/event/libevent.h"
 #include "common/network/filter_manager_impl.h"
+#include "common/ssl/ssl_socket.h"
 
 namespace Envoy {
 namespace Network {
@@ -81,8 +82,10 @@ public:
   const Address::InstanceConstSharedPtr& remoteAddress() const override { return remote_address_; }
   const Address::InstanceConstSharedPtr& localAddress() const override { return local_address_; }
   void setConnectionStats(const ConnectionStats& stats) override;
-  Ssl::Connection* ssl() override { return nullptr; }
-  const Ssl::Connection* ssl() const override { return nullptr; }
+  Ssl::Connection* ssl() override { return dynamic_cast<Ssl::SslSocket*>(transport_socket_.get()); }
+  const Ssl::Connection* ssl() const override {
+    return dynamic_cast<Ssl::SslSocket*>(transport_socket_.get());
+  }
   State state() const override;
   void write(Buffer::Instance& data) override;
   void setBufferLimits(uint32_t limit) override;

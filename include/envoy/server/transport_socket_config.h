@@ -10,13 +10,22 @@ namespace Envoy {
 namespace Server {
 namespace Configuration {
 
+class TransportSocketFactoryContext {
+public:
+  virtual ~TransportSocketFactoryContext() {}
+
+  virtual Ssl::ContextManager& sslContextManager() PURE;
+
+  virtual Stats::Scope& statsScope() const PURE;
+};
+
 class TransportSocketConfigFactory {
 public:
   virtual ~TransportSocketConfigFactory() {}
 
   virtual Network::TransportSocketFactoryPtr
   createTransportSocketFactory(const Protobuf::Message& config,
-                               Network::TransportSocketFactoryContext& context) PURE;
+                               TransportSocketFactoryContext& context) PURE;
 
   virtual ProtobufTypes::MessagePtr createEmptyConfigProto() PURE;
 

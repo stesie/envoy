@@ -10,7 +10,7 @@ namespace Configuration {
 
 Network::TransportSocketFactoryPtr
 RawBufferSocketFactory::createTransportSocketFactory(const Protobuf::Message&,
-                                                     Network::TransportSocketFactoryContext&) {
+                                                     TransportSocketFactoryContext&) {
   return Network::TransportSocketFactoryPtr{new Network::RawBufferSocketFactory};
 }
 

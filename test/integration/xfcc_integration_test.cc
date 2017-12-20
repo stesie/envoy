@@ -7,6 +7,7 @@
 #include "common/network/utility.h"
 #include "common/ssl/context_config_impl.h"
 #include "common/ssl/context_manager_impl.h"
+#include "common/ssl/ssl_socket.h"
 
 #include "test/test_common/network_utility.h"
 #include "test/test_common/printers.h"
@@ -46,7 +47,7 @@ void XfccIntegrationTest::TearDown() {
   runtime_.reset();
 }
 
-Ssl::ClientContextPtr XfccIntegrationTest::createClientSslContext(bool mtls) {
+Network::TransportSocketFactoryPtr XfccIntegrationTest::createClientSslContext(bool mtls) {
   std::string json_tls = R"EOF(
 {
   "ca_cert_file": "{{ test_rundir }}/test/config/integration/certs/cacert.pem",
@@ -71,7 +72,8 @@ Ssl::ClientContextPtr XfccIntegrationTest::createClientSslContext(bool mtls) {
   Json::ObjectSharedPtr loader = TestEnvironment::jsonLoadFromString(target);
   Ssl::ClientContextConfigImpl cfg(*loader);
   static auto* client_stats_store = new Stats::TestIsolatedStoreImpl();
-  return context_manager_->createSslClientContext(*client_stats_store, cfg);
+  return Network::TransportSocketFactoryPtr{
+      new Ssl::ClientSslSocketFactory(cfg, *context_manager_, *client_stats_store)};
 }
 
 Ssl::ServerContextPtr XfccIntegrationTest::createUpstreamSslContext() {
@@ -100,16 +102,16 @@ Network::ClientConnectionPtr XfccIntegrationTest::makeTlsClientConnection() {
   Network::Address::InstanceConstSharedPtr address =
       Network::Utility::resolveUrl("tcp://" + Network::Test::getLoopbackAddressUrlString(version_) +
                                    ":" + std::to_string(lookupPort("ssl")));
-  return dispatcher_->createSslClientConnection(*client_tls_ssl_ctx_, address,
-                                                Network::Address::InstanceConstSharedPtr());
+  return dispatcher_->createClientConnection(address, Network::Address::InstanceConstSharedPtr(),
+                                             client_tls_ssl_ctx_->createTransportSocket());
 }
 
 Network::ClientConnectionPtr XfccIntegrationTest::makeMtlsClientConnection() {
   Network::Address::InstanceConstSharedPtr address =
       Network::Utility::resolveUrl("tcp://" + Network::Test::getLoopbackAddressUrlString(version_) +
                                    ":" + std::to_string(lookupPort("ssl")));
-  return dispatcher_->createSslClientConnection(*client_mtls_ssl_ctx_, address,
-                                                Network::Address::InstanceConstSharedPtr());
+  return dispatcher_->createClientConnection(address, Network::Address::InstanceConstSharedPtr(),
+                                             client_mtls_ssl_ctx_->createTransportSocket());
 }
 
 void XfccIntegrationTest::startTestServerWithXfccConfig(std::string fcc, std::string sccd) {
