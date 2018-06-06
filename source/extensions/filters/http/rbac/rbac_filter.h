@@ -19,7 +19,9 @@ namespace RBACFilter {
 // clang-format off
 #define ALL_RBAC_FILTER_STATS(COUNTER)                                                             \
   COUNTER(allowed)                                                                                 \
-  COUNTER(denied)
+  COUNTER(denied)                                                                                  \
+  COUNTER(shadow_allowed)                                                                      \
+  COUNTER(shadow_denied)
 // clang-format on
 
 /**
@@ -28,6 +30,8 @@ namespace RBACFilter {
 struct RoleBasedAccessControlFilterStats {
   ALL_RBAC_FILTER_STATS(GENERATE_COUNTER_STRUCT)
 };
+
+enum class EnforcementMode { ENFORCED, SHADOW };
 
 /**
  * Configuration for the RBAC filter.
@@ -39,17 +43,53 @@ public:
       const std::string& stats_prefix, Stats::Scope& scope);
 
   RoleBasedAccessControlFilterStats& stats() { return stats_; }
+  const envoy::config::filter::http::rbac::v2::RBAC& config() { return config_; }
 
   const Filters::Common::RBAC::RoleBasedAccessControlEngine&
-  engine(const Router::RouteConstSharedPtr route) const;
+  engine(const Router::RouteConstSharedPtr route, EnforcementMode mode) const;
+
+  bool isEnabled(const Router::RouteConstSharedPtr route, EnforcementMode mode) const;
 
 private:
+  const Filters::Common::RBAC::RoleBasedAccessControlEngine& engine(EnforcementMode mode) const {
+    return mode == EnforcementMode::ENFORCED ? engine_ : shadow_engine_;
+  }
+
+  bool isEnabled(EnforcementMode mode) const {
+    return mode == EnforcementMode::ENFORCED ? config_.has_rules() : config_.has_shadow_rules();
+  }
+
   RoleBasedAccessControlFilterStats stats_;
+
   const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl engine_;
+  const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl shadow_engine_;
+
+  const envoy::config::filter::http::rbac::v2::RBAC config_;
 };
 
 typedef std::shared_ptr<RoleBasedAccessControlFilterConfig>
     RoleBasedAccessControlFilterConfigSharedPtr;
+
+class RoleBasedAccessControlRouteSpecificFilterConfig : public Router::RouteSpecificFilterConfig {
+public:
+  RoleBasedAccessControlRouteSpecificFilterConfig(
+      const envoy::config::filter::http::rbac::v2::RBACPerRoute& per_route_config);
+
+  const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl&
+  engine(EnforcementMode mode) const {
+    return mode == EnforcementMode::ENFORCED ? engine_ : shadow_engine_;
+  }
+
+  bool isEnabled(EnforcementMode mode) const {
+    return mode == EnforcementMode::ENFORCED ? config_.has_rules() : config_.has_shadow_rules();
+  }
+
+private:
+  const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl engine_;
+  const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl shadow_engine_;
+
+  const envoy::config::filter::http::rbac::v2::RBAC config_;
+};
 
 /**
  * A filter that provides role-based access control authorization for HTTP requests.
