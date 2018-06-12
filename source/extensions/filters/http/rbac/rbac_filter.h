@@ -60,8 +60,8 @@ bool isEnabled(EnforcementMode mode) const {
 
   //const envoy::config::filter::http::rbac::v2::RBAC config_;
 
-  absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl> engine_;
-  absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl> shadow_engine_;
+  const absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl> engine_;
+  const absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl> shadow_engine_;
 };
 
 /**
