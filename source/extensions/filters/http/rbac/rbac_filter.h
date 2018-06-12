@@ -33,6 +33,37 @@ struct RoleBasedAccessControlFilterStats {
 
 enum class EnforcementMode { ENFORCED, SHADOW };
 
+class RoleBasedAccessControlRouteSpecificFilterConfig : public Router::RouteSpecificFilterConfig {
+ public:
+  RoleBasedAccessControlRouteSpecificFilterConfig(
+      const envoy::config::filter::http::rbac::v2::RBACPerRoute& per_route_config);
+
+  const absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl>&
+  engine(EnforcementMode mode) const {
+    return mode == EnforcementMode::ENFORCED ? engine_ : shadow_engine_;
+  }
+
+  /*
+const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl&
+engine(EnforcementMode mode) const {
+  return mode == EnforcementMode::ENFORCED ? engine_ : shadow_engine_;
+}
+
+
+bool isEnabled(EnforcementMode mode) const {
+  return mode == EnforcementMode::ENFORCED ? config_.has_rules() : config_.has_shadow_rules();
+}*/
+
+ private:
+  //const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl engine_;
+  //const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl shadow_engine_;
+
+  //const envoy::config::filter::http::rbac::v2::RBAC config_;
+
+  absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl> engine_;
+  absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl> shadow_engine_;
+};
+
 /**
  * Configuration for the RBAC filter.
  */
@@ -43,53 +74,52 @@ public:
       const std::string& stats_prefix, Stats::Scope& scope);
 
   RoleBasedAccessControlFilterStats& stats() { return stats_; }
-  const envoy::config::filter::http::rbac::v2::RBAC& config() { return config_; }
+  //const envoy::config::filter::http::rbac::v2::RBAC& config() { return config_; }
 
+  /*
   const Filters::Common::RBAC::RoleBasedAccessControlEngine&
+  engine(const Router::RouteConstSharedPtr route, EnforcementMode mode) const;*/
+
+  const absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl>&
   engine(const Router::RouteConstSharedPtr route, EnforcementMode mode) const;
 
-  bool isEnabled(const Router::RouteConstSharedPtr route, EnforcementMode mode) const;
+  //bool isEnabled(const Router::RouteConstSharedPtr route, EnforcementMode mode) const;
 
 private:
+  /*
   const Filters::Common::RBAC::RoleBasedAccessControlEngine& engine(EnforcementMode mode) const {
+    return mode == EnforcementMode::ENFORCED ? engine_ : shadow_engine_;
+  }*/
+
+  const absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl>& engine(EnforcementMode mode) const {
     return mode == EnforcementMode::ENFORCED ? engine_ : shadow_engine_;
   }
 
+  const RoleBasedAccessControlRouteSpecificFilterConfig*
+  localRoute(const Router::RouteConstSharedPtr route) const;
+
+  /*
   bool isEnabled(EnforcementMode mode) const {
-    return mode == EnforcementMode::ENFORCED ? config_.has_rules() : config_.has_shadow_rules();
-  }
+    //return mode == EnforcementMode::ENFORCED ? config_.has_rules() : config_.has_shadow_rules();
+    return mode == EnforcementMode::ENFORCED ? enabled_enforced_ : enabled_shadow_;
+  }*/
 
   RoleBasedAccessControlFilterStats stats_;
 
-  const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl engine_;
-  const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl shadow_engine_;
+  //const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl engine_;
+  //const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl shadow_engine_;
 
-  const envoy::config::filter::http::rbac::v2::RBAC config_;
+  absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl> engine_;
+  absl::optional<Filters::Common::RBAC::RoleBasedAccessControlEngineImpl> shadow_engine_;
+
+  //const envoy::config::filter::http::rbac::v2::RBAC config_;
+
+  //bool enabled_enforced_;
+  //bool enabled_shadow_;
 };
 
 typedef std::shared_ptr<RoleBasedAccessControlFilterConfig>
     RoleBasedAccessControlFilterConfigSharedPtr;
-
-class RoleBasedAccessControlRouteSpecificFilterConfig : public Router::RouteSpecificFilterConfig {
-public:
-  RoleBasedAccessControlRouteSpecificFilterConfig(
-      const envoy::config::filter::http::rbac::v2::RBACPerRoute& per_route_config);
-
-  const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl&
-  engine(EnforcementMode mode) const {
-    return mode == EnforcementMode::ENFORCED ? engine_ : shadow_engine_;
-  }
-
-  bool isEnabled(EnforcementMode mode) const {
-    return mode == EnforcementMode::ENFORCED ? config_.has_rules() : config_.has_shadow_rules();
-  }
-
-private:
-  const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl engine_;
-  const Filters::Common::RBAC::RoleBasedAccessControlEngineImpl shadow_engine_;
-
-  const envoy::config::filter::http::rbac::v2::RBAC config_;
-};
 
 /**
  * A filter that provides role-based access control authorization for HTTP requests.
