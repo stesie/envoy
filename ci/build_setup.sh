@@ -10,6 +10,10 @@ export PPROF_PATH=/thirdparty_build/bin/pprof
 [ -z "${ENVOY_SRCDIR}" ] && export ENVOY_SRCDIR=/source
 echo "ENVOY_SRCDIR=${ENVOY_SRCDIR}"
 
+if [[ "/source" != "${ENVOY_SRCDIR}" ]]; then
+  ln -s "${ENVOY_SRCDIR}" /source
+fi
+
 function setup_gcc_toolchain() {
   export CC=gcc
   export CXX=g++

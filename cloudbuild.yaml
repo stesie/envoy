@@ -1,0 +1,10 @@
+steps:
+  - id: bazel.release
+    name: envoyproxy/envoy-build:d1646d643b492ea070c96d0b67caf5bb2c8ca854
+    entrypoint: "ci/do_circle_ci.sh"
+    args: ["bazel.release"]
+    env: ["ENVOY_SRCDIR=/workspace", "NUM_CPUS=16"]
+options:
+  machineType: 'N1_HIGHCPU_32'
+  diskSizeGb: 500
+timeout: 3600s
