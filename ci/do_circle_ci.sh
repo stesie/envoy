@@ -13,12 +13,11 @@ export ENVOY_SRCDIR="$(pwd)"
 # xlarge resource_class.
 # See note: https://circleci.com/docs/2.0/configuration-reference/#resource_class for why we
 # hard code this (basically due to how docker works).
-export NUM_CPUS=1
 
 # CircleCI doesn't support IPv6 by default, so we run all tests with IPv4, and
 # a limited subset with IPv6 using "machine: true" and do_circle_ci_ipv6_tests.sh
 # (see https://circleci.com/docs/2.0/executor-types/#using-machine)
-export BAZEL_EXTRA_TEST_OPTIONS="--test_env=ENVOY_IP_TEST_VERSIONS=v4only"
+export BAZEL_EXTRA_TEST_OPTIONS="--local_resources=4096,2,1.0 --test_env=ENVOY_IP_TEST_VERSIONS=v4only"
 
 function finish {
   echo "disk space at end of build:"
