@@ -60,25 +60,15 @@ export USER=bazel
 export TEST_TMPDIR=/build/tmp
 export BAZEL="bazel"
 # Not sandboxing, since non-privileged Docker can't do nested namespaces.
-BAZEL_OPTIONS="--package_path %workspace%:${ENVOY_SRCDIR}"
+BAZEL_OPTIONS="--override_repository=envoy_deps=/envoy_deps_gcc_opt"
 export BAZEL_QUERY_OPTIONS="${BAZEL_OPTIONS}"
-export BAZEL_BUILD_OPTIONS="--strategy=Genrule=standalone --spawn_strategy=standalone \
-  --verbose_failures ${BAZEL_OPTIONS} --action_env=HOME --action_env=PYTHONUSERBASE \
+export BAZEL_BUILD_OPTIONS="${BAZEL_OPTIONS} \
+  --verbose_failures --action_env=HOME --action_env=PYTHONUSERBASE \
   --jobs=${NUM_CPUS} --show_task_finish ${BAZEL_BUILD_EXTRA_OPTIONS}"
 export BAZEL_TEST_OPTIONS="${BAZEL_BUILD_OPTIONS} --test_env=HOME --test_env=PYTHONUSERBASE \
   --test_env=UBSAN_OPTIONS=print_stacktrace=1 \
   --cache_test_results=no --test_output=all ${BAZEL_EXTRA_TEST_OPTIONS}"
 [[ "${BAZEL_EXPUNGE}" == "1" ]] && "${BAZEL}" clean --expunge
-ln -sf /thirdparty "${ENVOY_SRCDIR}"/ci/prebuilt
-ln -sf /thirdparty_build "${ENVOY_SRCDIR}"/ci/prebuilt
-
-# Replace the existing Bazel output cache with a copy of the image's prebuilt deps.
-if [[ -d /bazel-prebuilt-output && ! -d "${TEST_TMPDIR}/_bazel_${USER}" ]]; then
-  BAZEL_OUTPUT_BASE="$(bazel info output_base)"
-  mkdir -p "${TEST_TMPDIR}/_bazel_${USER}/install"
-  rsync -a /bazel-prebuilt-root/install/* "${TEST_TMPDIR}/_bazel_${USER}/install/"
-  rsync -a /bazel-prebuilt-output "${BAZEL_OUTPUT_BASE}"
-fi
 
 if [ "$1" != "-nofetch" ]; then
   # Setup Envoy consuming project.

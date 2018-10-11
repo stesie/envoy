@@ -9,5 +9,6 @@ envoy_package()
 
 exports_files([
     "build_and_install_deps.sh",
+    "deps.BUILD",
     "Makefile",
 ])

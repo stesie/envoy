@@ -95,7 +95,7 @@ def _build_recipe_repository_impl(ctxt):
             Label("//ci/build_container/build_recipes:" + r + ".sh"),
             "build_recipes/" + r + ".sh",
         )
-    ctxt.symlink(Label("//ci/prebuilt:BUILD"), "BUILD")
+    ctxt.symlink(Label("//ci/prebuilt:deps.BUILD"), "BUILD")
 
     # Run the build script.
     command = []
