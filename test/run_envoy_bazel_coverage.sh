@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 [[ -z "${SRCDIR}" ]] && SRCDIR="${PWD}"
 [[ -z "${GCOVR_DIR}" ]] && GCOVR_DIR="${SRCDIR}/bazel-$(basename "${SRCDIR}")"
@@ -25,17 +25,14 @@ do
 done
 echo "Cleanup completed."
 
-# Force dbg for path consistency later, don't include debug code in coverage.
-BAZEL_TEST_OPTIONS="${BAZEL_TEST_OPTIONS} -c dbg --copt=-DNDEBUG"
-
 # Run all tests under "bazel test", no sandbox. We're going to generate the
 # .gcda inplace in the bazel-out/ directory. This is in contrast to the "bazel
 # coverage" method, which is currently broken for C++ (see
 # https://github.com/bazelbuild/bazel/issues/1118). This works today as we have
 # a single coverage test binary and do not require the "bazel coverage" support
 # for collecting multiple traces and glueing them together.
-"${BAZEL_COVERAGE}" --batch test "${COVERAGE_TARGET}" ${BAZEL_TEST_OPTIONS} \
-  --cache_test_results=no --cxxopt="--coverage" --cxxopt="-DENVOY_CONFIG_COVERAGE=1" \
+"${BAZEL_COVERAGE}" test --config=coverage "${COVERAGE_TARGET}" ${BAZEL_TEST_OPTIONS} \
+  --cxxopt="--coverage" --cxxopt="-DENVOY_CONFIG_COVERAGE=1" \
   --linkopt="--coverage" --define ENVOY_CONFIG_COVERAGE=1 --test_output=streamed \
   --strategy=Genrule=standalone --spawn_strategy=standalone --test_timeout=2000 \
   --test_arg="--log-path /dev/null" --test_arg="-l trace"

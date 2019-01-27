@@ -2,7 +2,7 @@
 
 # Run a CI build/test target, e.g. docs, asan.
 
-set -e
+set -ex
 
 build_setup_args=""
 if [[ "$1" == "fix_format" || "$1" == "check_format" || "$1" == "check_repositories" || "$1" == "check_spelling" || "$1" == "fix_spelling" || "$1" == "bazel.clang_tidy" ]]; then
@@ -33,7 +33,7 @@ function bazel_with_collection() {
 function bazel_release_binary_build() {
   echo "Building..."
   cd "${ENVOY_CI_DIR}"
-  bazel build ${BAZEL_BUILD_OPTIONS} -c opt //source/exe:envoy-static
+  bazel build --config=release ${BAZEL_BUILD_OPTIONS} //source/exe:envoy-static
   # Copy the envoy-static binary somewhere that we can access outside of the
   # container.
   cp -f \
@@ -69,15 +69,14 @@ if [[ "$1" == "bazel.release" ]]; then
   fi
 
   setup_gcc_toolchain
-  echo "bazel release build with tests..."
-  bazel_release_binary_build
 
+  cd "${ENVOY_CI_DIR}"
   if [[ $# -gt 1 ]]; then
     shift
     echo "Testing $* ..."
     # Run only specified tests. Argument can be a single test
     # (e.g. '//test/common/common:assert_test') or a test group (e.g. '//test/common/...')
-    bazel_with_collection test ${BAZEL_TEST_OPTIONS} -c opt $*
+    bazel_with_collection test --config=release ${BAZEL_TEST_OPTIONS} $*
   else
     echo "Testing..."
     # We have various test binaries in the test directory such as tools, benchmarks, etc. We
@@ -92,10 +91,12 @@ if [[ "$1" == "bazel.release" ]]; then
     [ -z "$CIRCLECI" ] || export BAZEL_BUILD_OPTIONS="${BAZEL_BUILD_OPTIONS} --local_resources=12288,6,1"
     [ -z "$CIRCLECI" ] || export BAZEL_TEST_OPTIONS="${BAZEL_TEST_OPTIONS} --local_resources=12288,6,1"
 
-    bazel build ${BAZEL_BUILD_OPTIONS} -c opt //include/... //source/... //test/...
     # Now run all of the tests which should already be compiled.
-    bazel_with_collection test ${BAZEL_TEST_OPTIONS} -c opt //test/...
+    bazel_with_collection test --config=release ${BAZEL_TEST_OPTIONS} //test/...
   fi
+
+  bazel_release_binary_build
+  echo "bazel release build with tests..."
   exit 0
 elif [[ "$1" == "bazel.release.server_only" ]]; then
   setup_gcc_toolchain

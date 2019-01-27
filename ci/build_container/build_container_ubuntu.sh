@@ -15,9 +15,9 @@ apt-get install -y clang-7 clang-format-7 clang-tidy-7 lld-7 libc++-7-dev libc++
 # gcc-7
 add-apt-repository -y ppa:ubuntu-toolchain-r/test
 apt update
-apt install -y g++-7
-update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-7 1000
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-7 1000
+apt install -y g++-6
+update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6 1000
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 1000
 update-alternatives --config gcc
 update-alternatives --config g++
 # Bazel and related dependencies.

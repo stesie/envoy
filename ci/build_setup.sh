@@ -62,12 +62,8 @@ export BAZEL="bazel"
 # Not sandboxing, since non-privileged Docker can't do nested namespaces.
 BAZEL_OPTIONS="--package_path %workspace%:${ENVOY_SRCDIR}"
 export BAZEL_QUERY_OPTIONS="${BAZEL_OPTIONS}"
-export BAZEL_BUILD_OPTIONS="--strategy=Genrule=standalone --spawn_strategy=standalone \
-  --verbose_failures ${BAZEL_OPTIONS} --action_env=HOME --action_env=PYTHONUSERBASE \
-  --jobs=${NUM_CPUS} --show_task_finish ${BAZEL_BUILD_EXTRA_OPTIONS}"
-export BAZEL_TEST_OPTIONS="${BAZEL_BUILD_OPTIONS} --test_env=HOME --test_env=PYTHONUSERBASE \
-  --test_env=UBSAN_OPTIONS=print_stacktrace=1 \
-  --cache_test_results=no --test_output=all ${BAZEL_EXTRA_TEST_OPTIONS}"
+export BAZEL_BUILD_OPTIONS="${BAZEL_OPTIONS} --config=ci --jobs=${NUM_CPUS} ${BAZEL_BUILD_EXTRA_OPTIONS}"
+export BAZEL_TEST_OPTIONS="${BAZEL_BUILD_OPTIONS} ${BAZEL_EXTRA_TEST_OPTIONS}"
 [[ "${BAZEL_EXPUNGE}" == "1" ]] && "${BAZEL}" clean --expunge
 ln -sf /thirdparty "${ENVOY_SRCDIR}"/ci/prebuilt
 ln -sf /thirdparty_build "${ENVOY_SRCDIR}"/ci/prebuilt
@@ -127,11 +123,12 @@ trap cleanup EXIT
 
 # Hack due to https://github.com/envoyproxy/envoy/issues/838 and the need to have
 # .bazelrc available for build linkstamping.
-mkdir -p "${ENVOY_FILTER_EXAMPLE_SRCDIR}"/bazel
-mkdir -p "${ENVOY_CI_DIR}"/bazel
-ln -sf "${ENVOY_SRCDIR}"/bazel/get_workspace_status "${ENVOY_FILTER_EXAMPLE_SRCDIR}"/bazel/
-ln -sf "${ENVOY_SRCDIR}"/bazel/get_workspace_status "${ENVOY_CI_DIR}"/bazel/
-cp -f "${ENVOY_SRCDIR}"/.bazelrc "${ENVOY_FILTER_EXAMPLE_SRCDIR}"/
-cp -f "${ENVOY_SRCDIR}"/.bazelrc "${ENVOY_CI_DIR}"/
+[ -z "$CIRCLECI" ] || cat "${ENVOY_SRCDIR}"/.circleci/.bazelrc >> "${ENVOY_SRCDIR}"/.bazelrc
+for workspace in "${ENVOY_FILTER_EXAMPLE_SRCDIR}" "${ENVOY_CI_DIR}" "${ENVOY_BUILD_DIR}"; do
+  mkdir -p "${workspace}"/bazel
+  ln -sf "${ENVOY_SRCDIR}"/bazel/get_workspace_status "${workspace}"/bazel/
+  cp -f "${ENVOY_SRCDIR}"/.bazelrc "${workspace}"/
+done
+echo "deadbeef" > "${ENVOY_BUILD_DIR}"/SOURCE_VERSION
 
 export BUILDIFIER_BIN="/usr/local/bin/buildifier"
