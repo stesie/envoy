@@ -20,6 +20,7 @@
 namespace Envoy {
 namespace Network {
 namespace Address {
+namespace {
 class IpResolverTest : public TestBase {
 public:
   Resolver* resolver_{Registry::FactoryRegistry<Resolver>::getFactory("envoy.ip")};
@@ -165,7 +166,7 @@ TEST(ResolverTest, NoSuchResolver) {
   EXPECT_THROW_WITH_MESSAGE(resolveProtoAddress(address), EnvoyException,
                             "Unknown address resolver: envoy.test.resolver");
 }
-
+} // namespace
 } // namespace Address
 } // namespace Network
 } // namespace Envoy

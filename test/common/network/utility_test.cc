@@ -16,7 +16,7 @@
 
 namespace Envoy {
 namespace Network {
-
+namespace {
 TEST(NetworkUtility, Url) {
   EXPECT_EQ("foo", Utility::hostFromTcpUrl("tcp://foo:1234"));
   EXPECT_EQ(1234U, Utility::portFromTcpUrl("tcp://foo:1234"));
@@ -457,6 +457,6 @@ TEST(AbslUint128, TestByteOrder) {
     EXPECT_EQ(random_number, Utility::Ip6htonl(Utility::Ip6ntohl(random_number)));
   }
 }
-
+} // namespace
 } // namespace Network
 } // namespace Envoy

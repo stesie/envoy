@@ -22,7 +22,7 @@ using testing::Return;
 
 namespace Envoy {
 namespace Network {
-
+namespace {
 class TestUdpListenerImpl : public UdpListenerImpl {
 public:
   TestUdpListenerImpl(Event::DispatcherImpl& dispatcher, Socket& socket, UdpListenerCallbacks& cb)
@@ -516,6 +516,6 @@ TEST_P(UdpListenerImplTest, UdpListenerRecvFromError) {
 
   dispatcher_.run(Event::Dispatcher::RunType::Block);
 }
-
+} // namespace
 } // namespace Network
 } // namespace Envoy

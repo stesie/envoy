@@ -104,7 +104,6 @@ void testSocketBindAndConnect(Network::Address::IpVersion ip_version, bool v6onl
     client_connect(v4_addr_port);
   }
 }
-} // namespace
 
 class AddressImplSocketTest : public TestBaseWithParam<IpVersion> {};
 INSTANTIATE_TEST_SUITE_P(IpVersions, AddressImplSocketTest,
@@ -475,6 +474,7 @@ INSTANTIATE_TEST_SUITE_P(AddressCrossProduct, MixedAddressTest,
                          ::testing::Combine(::testing::ValuesIn(test_cases),
                                             ::testing::ValuesIn(test_cases)));
 
+} // namespace
 } // namespace Address
 } // namespace Network
 } // namespace Envoy
