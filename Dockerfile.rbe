@@ -1,0 +1,7 @@
+FROM gcr.io/cloud-marketplace/google/rbe-ubuntu16-04:latest
+
+ADD ci/build_container/build_container_rbe_ubuntu.sh /
+RUN ./build_container_rbe_ubuntu.sh
+
+ADD toolchains/envoy_cc_wrapper /usr/local/bin/envoy_cc_wrapper
+

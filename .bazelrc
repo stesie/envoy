@@ -1,4 +1,5 @@
 # Envoy specific Bazel build/test options.
+import %workspace%/rbe.bazelrc
 
 # Bazel doesn't need more than 200MB of memory based on memory profiling:
 # https://docs.bazel.build/versions/master/skylark/performance.html#memory-profiling
