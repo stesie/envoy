@@ -1,0 +1,4 @@
+FROM gcr.io/cloud-marketplace/google/rbe-ubuntu16-04@sha256:9bd8ba020af33edb5f11eff0af2f63b3bcb168cd6566d7b27c6685e717787928
+
+ADD ci/build_container/build_container_rbe_ubuntu.sh /
+RUN ./build_container_rbe_ubuntu.sh
