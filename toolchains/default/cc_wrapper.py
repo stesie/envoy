@@ -5,8 +5,8 @@ import shlex
 import sys
 import tempfile
 
-envoy_real_cc = "/usr/local/bin/clang"
-envoy_real_cxx = "/usr/local/bin/clang++"
+envoy_real_cc = "/usr/lib/llvm-8/bin/clang"
+envoy_real_cxx = "/usr/lib/llvm-8/bin/clang++"
 envoy_cflags = ""
 envoy_cxxflags = ""
 

@@ -16,39 +16,17 @@ licenses(["notice"])  # Apache 2.0
 
 package(default_visibility = ["//visibility:public"])
 
-# This target is auto-generated from release/cpp.tpl and should not be
-# modified directly.
 toolchain(
     name = "cc-toolchain-clang-x86_64-default",
     exec_compatible_with = [
         "@bazel_tools//platforms:linux",
         "@bazel_tools//platforms:x86_64",
         "@bazel_tools//tools/cpp:clang",
-        "@bazel_toolchains//constraints:xenial",
     ],
     target_compatible_with = [
         "@bazel_tools//platforms:linux",
         "@bazel_tools//platforms:x86_64",
     ],
     toolchain = "//toolchains/default:cc-compiler-k8",
-    toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
-)
-
-# This target is auto-generated from release/cpp.tpl and should not be
-# modified directly.
-toolchain(
-    name = "cc-toolchain-clang-x86_64-msan",
-    exec_compatible_with = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:x86_64",
-        "@bazel_tools//tools/cpp:clang",
-        "@bazel_toolchains//constraints:xenial",
-        "@bazel_toolchains//constraints/sanitizers:support_msan",
-    ],
-    target_compatible_with = [
-        "@bazel_tools//platforms:linux",
-        "@bazel_tools//platforms:x86_64",
-    ],
-    toolchain = "//toolchains/msan:cc-compiler-k8",
     toolchain_type = "@bazel_tools//tools/cpp:toolchain_type",
 )
