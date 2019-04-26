@@ -9,7 +9,16 @@ platform(
   properties: {
     name: "container-image"
     value:"docker://gcr.io/tetratelabs/envoy-build@sha256:45eea037ebc359852e3b745669cb7a0d61f9416aac4ffa8df59982f04db85f4b"
-  }""",
+  }
+  properties: {
+    name: "dockerAddCapabilities"
+    value: "SYS_PTRACE"
+  }
+  properties: {
+    name: "dockerNetwork"
+    value: "standard"
+  }
+  """,
 )
 
 java_runtime(
