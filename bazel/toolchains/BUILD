@@ -12,7 +12,7 @@ platform(
   }
   properties: {
     name: "dockerAddCapabilities"
-    value: "SYS_PTRACE"
+    value: "SYS_PTRACE,NET_RAW,NET_ADMIN"
   }
   properties: {
     name: "dockerNetwork"
