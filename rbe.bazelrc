@@ -25,7 +25,6 @@
 # this higher can make builds faster by allowing more jobs to run in parallel.
 # Setting it too high can result in jobs that timeout, however, while waiting
 # for a remote machine to execute them.
-build:remote --jobs=100
 
 # Set several flags related to specifying the platform, toolchain and java
 # properties.
@@ -39,17 +38,6 @@ build:remote --javabase=@bazel_toolchains//configs/ubuntu16_04_clang/1.2:jdk8
 build:remote --host_java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 build:remote --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
 build:remote --crosstool_top=@envoy//toolchains/default:toolchain
-#build:remote --action_env=BAZEL_DO_NOT_DETECT_CPP_TOOLCHAIN=1
-# Platform flags:
-# The toolchain container used for execution is defined in the target indicated
-# by "extra_execution_platforms", "host_platform" and "platforms".
-# If you are using your own toolchain container, you need to create a platform
-# target with "constraint_values" that allow for the toolchain specified with
-# "extra_toolchains" to be selected (given constraints defined in
-# "exec_compatible_with").
-# More about platforms: https://docs.bazel.build/versions/master/platforms.html
-build:remote --extra_toolchains=@envoy//toolchains/cpp:cc-toolchain-clang-x86_64-default
-build:remote --extra_execution_platforms=@envoy//:rbe_ubuntu16.04
 build:remote --host_platform=@envoy//:rbe_ubuntu16.04
 build:remote --platforms=@envoy//:rbe_ubuntu16.04
 

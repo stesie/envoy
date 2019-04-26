@@ -5,10 +5,10 @@ import shlex
 import sys
 import tempfile
 
-envoy_real_cc = {ENVOY_REAL_CC}
-envoy_real_cxx = {ENVOY_REAL_CXX}
-envoy_cflags = {ENVOY_CFLAGS}
-envoy_cxxflags = {ENVOY_CXXFLAGS}
+envoy_real_cc = "/usr/local/bin/clang"
+envoy_real_cxx = "/usr/local/bin/clang++"
+envoy_cflags = ""
+envoy_cxxflags = ""
 
 
 @contextlib.contextmanager
