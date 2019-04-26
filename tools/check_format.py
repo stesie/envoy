@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 
@@ -9,6 +9,7 @@ import multiprocessing
 import os
 import os.path
 import re
+import shlex
 import subprocess
 import stat
 import sys
@@ -680,7 +681,8 @@ if __name__ == "__main__":
     results = []
     # For each file in target_path, start a new task in the pool and collect the
     # results (results is passed by reference, and is used as an output).
-    os.path.walk(target_path, checkFormatVisitor, (pool, results))
+    for target_file in subprocess.check_output("git ls-files -- {}".format(shlex.quote(target_path)), shell=True).splitlines():
+        checkFormatVisitor((pool, results), target_path, str(target_file))
 
     # Close the pool to new tasks, wait for all of the running tasks to finish,
     # then collect the error messages.
