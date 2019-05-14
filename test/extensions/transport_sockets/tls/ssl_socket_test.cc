@@ -8,6 +8,7 @@
 #include "common/common/empty_string.h"
 #include "common/event/dispatcher_impl.h"
 #include "common/json/json_loader.h"
+#include "common/memory/stats.h"
 #include "common/network/address_impl.h"
 #include "common/network/listen_socket_impl.h"
 #include "common/network/transport_socket_options_impl.h"
@@ -3759,9 +3760,11 @@ protected:
 
     client_ssl_socket_factory_ = std::make_unique<ClientSslSocketFactory>(
         std::move(client_cfg), *manager_, client_stats_store_);
+    auto transport_socket = client_ssl_socket_factory_->createTransportSocket(nullptr);
+    client_transport_socket_ = transport_socket.get();
     client_connection_ = dispatcher_->createClientConnection(
         socket_.localAddress(), source_address_,
-        client_ssl_socket_factory_->createTransportSocket(nullptr), nullptr);
+        std::move(transport_socket), nullptr);
     client_connection_->addConnectionCallbacks(client_callbacks_);
     client_connection_->connect();
     read_filter_.reset(new Network::MockReadFilter());
@@ -3937,6 +3940,7 @@ protected:
   Envoy::Ssl::ClientContextSharedPtr client_ctx_;
   Network::TransportSocketFactoryPtr client_ssl_socket_factory_;
   Network::ClientConnectionPtr client_connection_;
+  Network::TransportSocket* client_transport_socket_{};
   Network::ConnectionPtr server_connection_;
   NiceMock<Network::MockConnectionCallbacks> server_callbacks_;
   std::shared_ptr<Network::MockReadFilter> read_filter_;
@@ -4003,7 +4007,86 @@ TEST_P(SslReadBufferLimitTest, TestBind) {
   disconnect();
 }
 
+TEST_P(SslReadBufferLimitTest, SmallReadsIntoSameSlice) {
+
+  const size_t start_mem = Memory::Stats::totalCurrentlyReserved();
+
+  uint32_t read_buffer_limit = 1024;
+  uint32_t expected_chunk_size = 1024;
+  uint32_t write_size = 1;
+  uint32_t num_writes = 1024;
+
+
+  Network::TransportSocket *server_transport_socket = nullptr;
+
+  initialize();
+
+  std::shared_ptr<Network::MockReadFilter> client_read_filter = std::make_shared<Network::MockReadFilter>();
+  client_connection_->addReadFilter(client_read_filter);
+
+  EXPECT_CALL(listener_callbacks_, onAccept_(_, _))
+      .WillOnce(Invoke([&](Network::ConnectionSocketPtr& socket, bool) -> void {
+        auto transport_socket = server_ssl_socket_factory_->createTransportSocket(nullptr);
+      server_transport_socket = transport_socket.get();
+      Network::ConnectionPtr new_connection = dispatcher_->createServerConnection(
+          std::move(socket), std::move(transport_socket));
+        new_connection->setBufferLimits(read_buffer_limit);
+        listener_callbacks_.onNewConnection(std::move(new_connection));
+      }));
+  EXPECT_CALL(listener_callbacks_, onNewConnection_(_))
+      .WillOnce(Invoke([&](Network::ConnectionPtr& conn) -> void {
+        server_connection_ = std::move(conn);
+        server_connection_->addConnectionCallbacks(server_callbacks_);
+        server_connection_->addReadFilter(read_filter_);
+        EXPECT_EQ("", server_connection_->nextProtocol());
+        EXPECT_EQ(read_buffer_limit, server_connection_->bufferLimit());
+      }));
+
+  EXPECT_CALL(client_callbacks_, onEvent(Network::ConnectionEvent::Connected))
+      .WillOnce(Invoke([&](Network::ConnectionEvent) -> void { dispatcher_->exit(); }));
+  dispatcher_->run(Event::Dispatcher::RunType::Block);
+
+  uint32_t filter_seen = 0;
+
+  EXPECT_CALL(*client_read_filter, onNewConnection());
+  EXPECT_CALL(*client_read_filter, onData(_, _));
+
+  EXPECT_CALL(*read_filter_, onNewConnection());
+  EXPECT_CALL(*read_filter_, onData(_, _))
+      .WillRepeatedly(Invoke([&](Buffer::Instance& data, bool) -> Network::FilterStatus {
+        EXPECT_GE(expected_chunk_size, data.length());
+        filter_seen += data.length();
+        data.drain(data.length());
+        if (filter_seen == (write_size * num_writes)) {
+          server_connection_->close(Network::ConnectionCloseType::FlushWrite);
+        }
+        return Network::FilterStatus::StopIteration;
+      }));
+
+  EXPECT_CALL(client_callbacks_, onEvent(Network::ConnectionEvent::RemoteClose))
+      .WillOnce(Invoke([&](Network::ConnectionEvent) -> void {
+        EXPECT_EQ((write_size * num_writes), filter_seen);
+        dispatcher_->exit();
+      }));
+
+  for (uint32_t i = 0; i < num_writes; i++) {
+    Buffer::OwnedImpl data(std::string(write_size, 'a'));
+    client_transport_socket_->doWrite(data, false);
+  }
+
+  for (uint32_t i = 0; i < num_writes; i++) {
+    Buffer::OwnedImpl data(std::string(write_size, 'a'));
+    server_transport_socket->doWrite(data, false);
+  }
+
+  dispatcher_->run(Event::Dispatcher::RunType::Block);
+
+  const size_t end_mem = Memory::Stats::totalCurrentlyReserved();
+  std::cerr << "START: " << start_mem << " END: " << end_mem << std::endl;
+  EXPECT_LE(end_mem - start_mem, 64 * 1024);
+}
+
 } // namespace Tls
 } // namespace TransportSockets
 } // namespace Extensions
-} // namespace Envoy
+} // nam
