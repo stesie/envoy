@@ -4,19 +4,19 @@ REPOSITORY_LOCATIONS = dict(
         urls = ["https://github.com/bazelbuild/bazel-gazelle/releases/download/0.17.0/bazel-gazelle-0.17.0.tar.gz"],
     ),
     bazel_toolchains = dict(
-        sha256 = "68e7678473090542e679ce7e6aa8a3ba5669577dede2b404f9865d556bd99f10",
-        strip_prefix = "bazel-toolchains-0.28.0",
-        urls = [
-            "https://mirror.bazel.build/github.com/bazelbuild/bazel-toolchains/archive/0.28.0.tar.gz",
-            "https://github.com/bazelbuild/bazel-toolchains/archive/0.28.0.tar.gz",
-        ],
+        sha256 = "599cb541afc98c5d2522369db8cbcb98688d3e88b6fdf63e1e5a501bd9493089",
+        strip_prefix = "bazel-toolchains-f7a67715a5c368655a206f611870e836434cdc2a",
+        # 2019-07-24
+        # Need https://github.com/bazelbuild/bazel-toolchains/pull/644 to select correct toolchain from same image
+        # TODO(lizan): Update to release when new version is released.
+        urls = ["https://github.com/bazelbuild/bazel-toolchains/archive/f7a67715a5c368655a206f611870e836434cdc2a.tar.gz"],
     ),
     boringssl = dict(
         # Use commits from branch "chromium-stable-with-bazel"
-        sha256 = "448773376d063b1e9a19e4fd41002d1a31a968a13be20b3b66ecd4aab9cf14a8",
-        strip_prefix = "boringssl-e534d74f5732e1aeebd514f05271d089c530c2f9",
-        # chromium-75.0.3770.80
-        urls = ["https://github.com/google/boringssl/archive/e534d74f5732e1aeebd514f05271d089c530c2f9.tar.gz"],
+        sha256 = "18edf961f8377e8d10fd8497bc8a331def9cb60a6c2a50a4c8eb322b045042d5",
+        strip_prefix = "boringssl-87d1c8f292e5184fd727efe84f458d89687d7742",
+        # chromium-76.0.3809.87
+        urls = ["https://github.com/google/boringssl/archive/87d1c8f292e5184fd727efe84f458d89687d7742.tar.gz"],
     ),
     boringssl_fips = dict(
         sha256 = "b12ad676ee533824f698741bd127f6fbc82c46344398a6d78d25e62c6c418c73",
