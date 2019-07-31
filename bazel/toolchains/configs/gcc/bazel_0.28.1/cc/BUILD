@@ -91,7 +91,7 @@ cc_toolchain_config(
         "cpp": "/usr/bin/cpp",
         "gcc": "/usr/bin/gcc",
         "dwp": "/usr/bin/dwp",
-        "gcov": "/usr/bin/gcov",
+        "gcov": "None",
         "nm": "/usr/bin/nm",
         "objcopy": "/usr/bin/objcopy",
         "objdump": "/usr/bin/objdump",

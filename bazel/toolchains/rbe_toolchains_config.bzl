@@ -3,9 +3,8 @@ load("@bazel_toolchains//rules:rbe_repo.bzl", "rbe_autoconfig")
 load("@envoy//bazel/toolchains:configs/versions.bzl", _generated_toolchain_config_suite_autogen_spec = "TOOLCHAIN_CONFIG_AUTOGEN_SPEC")
 
 _ENVOY_BUILD_IMAGE_REGISTRY = "gcr.io"
-_ENVOY_BUILD_IMAGE_REPOSITORY = "envoy-ci/envoy-build"
-_ENVOY_BUILD_IMAGE_DIGEST = "sha256:9dbe1cba2b3340d49a25a1d286c8d49083ec986a6fead27f487e80ca334f065f"
-_ENVOY_BUILD_IMAGE_JAVA_HOME = "/usr/lib/jvm/java-8-openjdk-amd64"
+_ENVOY_BUILD_IMAGE_REPOSITORY = "tetratelabs/envoy-build"
+_ENVOY_BUILD_IMAGE_DIGEST = "sha256:5b61c264d2813adfe7310efd991879534e092e14e830df5b73e0bc4e0c233a80"
 _CONFIGS_OUTPUT_BASE = "bazel/toolchains/configs"
 
 _CLANG_ENV = {
@@ -46,9 +45,9 @@ _TOOLCHAIN_CONFIG_SUITE_SPEC = {
 def _envoy_rbe_toolchain(name, env, toolchain_config_spec_name):
     rbe_autoconfig(
         name = name + "_gen",
-        digest = _ENVOY_BUILD_IMAGE_DIGEST,
         export_configs = True,
-        java_home = _ENVOY_BUILD_IMAGE_JAVA_HOME,
+        create_java_configs = False,
+        digest = _ENVOY_BUILD_IMAGE_DIGEST,
         registry = _ENVOY_BUILD_IMAGE_REGISTRY,
         repository = _ENVOY_BUILD_IMAGE_REPOSITORY,
         env = env,
@@ -59,8 +58,8 @@ def _envoy_rbe_toolchain(name, env, toolchain_config_spec_name):
 
     rbe_autoconfig(
         name = name,
+        create_java_configs = False,
         digest = _ENVOY_BUILD_IMAGE_DIGEST,
-        java_home = _ENVOY_BUILD_IMAGE_JAVA_HOME,
         registry = _ENVOY_BUILD_IMAGE_REGISTRY,
         repository = _ENVOY_BUILD_IMAGE_REPOSITORY,
         toolchain_config_spec_name = toolchain_config_spec_name,
