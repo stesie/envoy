@@ -20,8 +20,6 @@ build --host_javabase=@bazel_tools//tools/jdk:remote_jdk11
 build --javabase=@bazel_tools//tools/jdk:remote_jdk11
 
 # Basic ASAN/UBSAN that works for gcc
-build:asan --action_env=BAZEL_LINKLIBS=
-build:asan --action_env=BAZEL_LINKOPTS=-lstdc++:-lm
 build:asan --define ENVOY_CONFIG_ASAN=1
 build:asan --copt -fsanitize=address,undefined
 build:asan --linkopt -fsanitize=address,undefined
