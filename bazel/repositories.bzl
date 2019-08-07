@@ -333,6 +333,13 @@ def _com_github_nghttp2_nghttp2():
 
 def _io_opentracing_cpp():
     _repository_impl("io_opentracing_cpp")
+    location = REPOSITORY_LOCATIONS["io_opentracing_cpp"]
+    http_archive(
+        name = "io_opentracing_cpp",
+        patch_args = ["-p1"],
+        patches = ["@envoy//bazel/foreign_cc:opentracing-cpp.patch"],
+        **location
+    )
     native.bind(
         name = "opentracing",
         actual = "@io_opentracing_cpp//:opentracing",
