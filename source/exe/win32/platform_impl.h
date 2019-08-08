@@ -6,6 +6,12 @@
 
 // clang-format off
 #include <winsock2.h>
+// <winsock2.h> includes <windows.h>, so undef some interfering symbols.
+#undef TRUE
+#undef DELETE
+#undef ERROR
+#undef GetMessage
+
 // clang-format on
 
 namespace Envoy {
