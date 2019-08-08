@@ -94,7 +94,6 @@ def envoy_cc_fuzz_test(name, corpus, deps = [], tags = [], **kwargs):
         # No fuzzing on macOS.
         deps = select({
             "@envoy//bazel:apple": ["//test:dummy_main"],
-            # needed for test_on_windows, see #164309012
             "@envoy//bazel:windows_x86_64": ["//test:dummy_main"],
             "//conditions:default": [
                 ":" + test_lib_name,
@@ -134,12 +133,11 @@ def envoy_cc_test(
         coverage = True,
         local = False,
         size = "medium",
-        # needed for test_on_windows, see #164309012
-        test_on_windows = True
         ):
-    test_lib_tags = []
     if coverage:
-        test_lib_tags.append("coverage_test_lib")
+        coverage_tags = tags + ["coverage_test_lib"]
+    else:
+        coverage_tags = tags
     _envoy_cc_test_infrastructure_library(
         name = name + "_lib_internal_only",
         srcs = srcs,
@@ -147,16 +145,14 @@ def envoy_cc_test(
         external_deps = external_deps,
         deps = deps + [repository + "//test/test_common:printers_includes"],
         repository = repository,
-        tags = test_lib_tags,
+        tags = coverage_tags,
         copts = copts,
         # Allow public visibility so these can be consumed in coverage tests in external projects.
         visibility = ["//visibility:public"],
     )
 
-    # needed for test_on_windows, see #164309012
-    if test_on_windows:
-        tags = tags + ["windows_test"]
-
+    if coverage:
+        coverage_tags = tags + ["coverage_test"]
     native.cc_test(
         name = name,
         copts = envoy_copts(repository, test = True) + copts,
@@ -165,7 +161,6 @@ def envoy_cc_test(
         malloc = tcmalloc_external_dep(repository),
         deps = select({
             "@envoy//bazel:apple": ["//test:dummy_main"],
-            # needed for test_on_windows, see #164309012
             "@envoy//bazel:windows_x86_64": ["//test:dummy_main"],
             "//conditions:default": [
                 ":" + name + "_lib_internal_only",
@@ -175,7 +170,7 @@ def envoy_cc_test(
         # from https://github.com/google/googletest/blob/6e1970e2376c14bf658eb88f655a054030353f9f/googlemock/src/gmock.cc#L51
         # 2 - by default, mocks act as StrictMocks.
         args = args + ["--gmock_default_mock_behavior=2"],
-        tags = tags + ["coverage_test"],
+        tags = coverage_tags,
         local = local,
         shard_count = shard_count,
         size = size,
@@ -194,8 +189,6 @@ def envoy_cc_test_library(
         tags = [],
         include_prefix = None,
         copts = [],
-        # needed for test_on_windows, see #164309012
-        test_on_windows = True,
         **kargs):
     deps = deps + [
         repository + "//test/test_common:printers_includes",
@@ -218,12 +211,7 @@ def envoy_cc_test_library(
 # Envoy test binaries should be specified with this function.
 def envoy_cc_test_binary(
         name,
-        test_on_windows = True,
         **kargs):
-
-    # needed for test_on_windows, see #164309012
-    if not test_on_windows and envoy_if_windows(True):
-        return
 
     envoy_cc_binary(
         name,
@@ -254,8 +242,6 @@ def envoy_sh_test(
         srcs = [],
         data = [],
         coverage = True,
-        # needed for test_on_windows, see #164309012
-        test_on_windows = True,
         tags = [],
         **kargs):
     if coverage:
@@ -275,16 +261,11 @@ def envoy_sh_test(
             deps = ["//test/test_common:environment_lib"],
         )
 
-    # needed for test_on_windows, see #164309012
-    if test_on_windows:
-        tags = tags + ["windows_test"]
-
     native.sh_test(
         name = name,
         srcs = ["//bazel:sh_test_wrapper.sh"],
         data = srcs + data,
         args = srcs,
-        # needed for test_on_windows, see #164309012
         tags = tags,
         **kargs
     )
