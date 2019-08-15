@@ -95,6 +95,8 @@ envoy_cc_test_library(
         "epoll_time_impl.h",
     ],
     external_deps = ["abseil_time"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = [
         ":quic_platform_expect_bug_impl_lib",
         ":quic_platform_thread_impl_lib",
@@ -107,6 +109,8 @@ envoy_cc_test_library(
 envoy_cc_test_library(
     name = "http2_platform_reconstruct_object_impl_lib",
     hdrs = ["http2_reconstruct_object_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
 )
 
 envoy_cc_test_library(
@@ -119,6 +123,8 @@ envoy_cc_test_library(
         "//bazel:linux": ["quic_epoll_clock.h"],
         "//conditions:default": [],
     }),
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = [
         "@com_googlesource_quiche//:quic_platform",
         "@com_googlesource_quiche//:quic_platform_epoll_lib",
@@ -128,12 +134,16 @@ envoy_cc_test_library(
 envoy_cc_test_library(
     name = "quic_platform_epoll_impl_lib",
     hdrs = ["quic_epoll_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = ["@com_googlesource_quiche//:epoll_server_lib"],
 )
 
 envoy_cc_test_library(
     name = "quic_platform_expect_bug_impl_lib",
     hdrs = ["quic_expect_bug_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = [
         "@com_googlesource_quiche//:quic_platform_base",
         "@com_googlesource_quiche//:quic_platform_mock_log",
@@ -143,6 +153,8 @@ envoy_cc_test_library(
 envoy_cc_test_library(
     name = "quic_platform_mock_log_impl_lib",
     hdrs = ["quic_mock_log_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = ["@com_googlesource_quiche//:quic_platform_base"],
 )
 
@@ -150,6 +162,8 @@ envoy_cc_test_library(
     name = "quic_platform_port_utils_impl_lib",
     srcs = ["quic_port_utils_impl.cc"],
     hdrs = ["quic_port_utils_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = [
         "//source/common/network:utility_lib",
         "//test/test_common:environment_lib",
@@ -159,6 +173,8 @@ envoy_cc_test_library(
 envoy_cc_test_library(
     name = "quic_platform_test_mem_slice_vector_impl_lib",
     hdrs = ["quic_test_mem_slice_vector_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = [
         "//include/envoy/buffer:buffer_interface",
         "@com_googlesource_quiche//:quic_platform_mem_slice_span",
@@ -168,17 +184,23 @@ envoy_cc_test_library(
 envoy_cc_test_library(
     name = "quic_platform_sleep_impl_lib",
     hdrs = ["quic_sleep_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = ["@com_googlesource_quiche//:quic_core_time_lib"],
 )
 
 envoy_cc_test_library(
     name = "quic_platform_system_event_loop_impl_lib",
     hdrs = ["quic_system_event_loop_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
 )
 
 envoy_cc_test_library(
     name = "quic_platform_thread_impl_lib",
     hdrs = ["quic_thread_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = [
         "//include/envoy/thread:thread_interface",
         "//source/common/common:assert_lib",
@@ -189,6 +211,8 @@ envoy_cc_test_library(
 envoy_cc_test_library(
     name = "quic_platform_test_impl_lib",
     hdrs = ["quic_test_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = ["//source/common/common:assert_lib"],
 )
 
@@ -196,6 +220,8 @@ envoy_cc_test_library(
     name = "quic_platform_test_output_impl_lib",
     srcs = ["quic_test_output_impl.cc"],
     hdrs = ["quic_test_output_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = [
         "//source/common/filesystem:filesystem_lib",
         "@com_googlesource_quiche//:quic_platform_base",
@@ -205,11 +231,15 @@ envoy_cc_test_library(
 envoy_cc_test_library(
     name = "quiche_common_platform_test_impl_lib",
     hdrs = ["quiche_test_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
 )
 
 envoy_cc_test_library(
     name = "spdy_platform_test_helpers_impl_lib",
     hdrs = ["spdy_test_helpers_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = [
         ":quic_platform_expect_bug_impl_lib",
     ],
@@ -218,11 +248,15 @@ envoy_cc_test_library(
 envoy_cc_test_library(
     name = "spdy_platform_test_impl_lib",
     hdrs = ["spdy_test_impl.h"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
 )
 
 envoy_cc_test(
     name = "envoy_quic_clock_test",
     srcs = ["envoy_quic_clock_test.cc"],
+    # not used in CF, so we haven't put the effort in to fix
+    tags = ["skip_on_windows"],
     deps = [
         "//source/extensions/quic_listeners/quiche/platform:envoy_quic_clock_lib",
         "//test/test_common:simulated_time_system_lib",
