@@ -78,10 +78,12 @@ def envoy_cc_fuzz_test(name, corpus, deps = [], tags = [], **kwargs):
         srcs = [corpus_name],
         testonly = 1,
     )
+    tags = tags + ["skip_on_windows"]
     test_lib_name = name + "_lib"
     envoy_cc_test_library(
         name = test_lib_name,
         deps = deps + ["//test/fuzz:fuzz_runner_lib"],
+        tags = tags,
         **kwargs
     )
     native.cc_test(
