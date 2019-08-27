@@ -158,5 +158,15 @@ build:asan-fuzzer --copt=-fsanitize=fuzzer-no-link
 # Remove UBSAN halt_on_error to avoid crashing on protobuf errors.
 build:asan-fuzzer --test_env=UBSAN_OPTIONS=print_stacktrace=1
 
+# Raspberry Pi cross compile
+build:rpi --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+build:rpi --crosstool_top=@rpi_bazel//tools/cc_toolchain:toolchain
+build:rpi --cpu=armeabihf
+build:rpi --compiler=clang
+build:rpi --define tcmalloc=disabled
+# A hack to link libc++
+build:rpi --custom_malloc=@org_llvm_libcxx//:libcxx
+
 try-import clang.bazelrc
 try-import user.bazelrc
+

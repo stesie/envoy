@@ -1,0 +1,208 @@
+diff --git a/tools/cc_toolchain/cc_toolchain_config.bzl b/tools/cc_toolchain/cc_toolchain_config.bzl
+index f542a63..2b56f6a 100644
+--- a/tools/cc_toolchain/cc_toolchain_config.bzl
++++ b/tools/cc_toolchain/cc_toolchain_config.bzl
+@@ -475,7 +475,6 @@ def _impl(ctx):
+         name = "common",
+         implies = [
+             "stdlib",
+-            "c++17",
+             "determinism",
+             "alwayslink",
+             "hardening",
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-ar b/tools/cc_toolchain/wrapper/arm-none-eabi-ar
+index 981678f..716b865 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-ar
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-ar
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/com_arm_developer_gcc/bin/arm-none-eabi-ar "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-ar "$@"
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-cpp b/tools/cc_toolchain/wrapper/arm-none-eabi-cpp
+index 01ce1ca..93003fe 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-cpp
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-cpp
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/com_arm_developer_gcc/bin/arm-none-eabi-cpp "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-cpp "$@"
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-g++ b/tools/cc_toolchain/wrapper/arm-none-eabi-g++
+index c53689f..dd68d15 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-g++
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-g++
+@@ -54,9 +54,9 @@ def main():
+          if x.endswith(".c") or x.endswith(".S")]) > 0
+ 
+     if not is_a_c_file_present:
+-        run("external/com_arm_developer_gcc/bin/arm-none-eabi-g++", args)
++        run("${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-g++", args)
+     else:
+-        run("external/com_arm_developer_gcc/bin/arm-none-eabi-gcc", strip_cpp_args(args))
++        run("${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-gcc", strip_cpp_args(args))
+ 
+ 
+ if __name__ == '__main__':
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-gcc b/tools/cc_toolchain/wrapper/arm-none-eabi-gcc
+index bbc3c83..ba8edb4 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-gcc
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-gcc
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/com_arm_developer_gcc/bin/arm-none-eabi-gcc "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-gcc "$@"
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-gcov b/tools/cc_toolchain/wrapper/arm-none-eabi-gcov
+index f69ffb2..f3fe36a 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-gcov
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-gcov
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/com_arm_developer_gcc/bin/arm-none-eabi-gcov "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-gcov "$@"
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-ld b/tools/cc_toolchain/wrapper/arm-none-eabi-ld
+index 76d4745..3f8afa6 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-ld
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-ld
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/com_arm_developer_gcc/bin/arm-none-eabi-ld "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-ld "$@"
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-nm b/tools/cc_toolchain/wrapper/arm-none-eabi-nm
+index 08664cb..7f62a06 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-nm
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-nm
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/com_arm_developer_gcc/bin/arm-none-eabi-nm "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-nm "$@"
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-objcopy b/tools/cc_toolchain/wrapper/arm-none-eabi-objcopy
+index 2de1f4f..2c6e076 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-objcopy
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-objcopy
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/com_arm_developer_gcc/bin/arm-none-eabi-objcopy "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-objcopy "$@"
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-objdump b/tools/cc_toolchain/wrapper/arm-none-eabi-objdump
+index 877d893..0e0e1d9 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-objdump
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-objdump
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/com_arm_developer_gcc/bin/arm-none-eabi-objdump "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-objdump "$@"
+diff --git a/tools/cc_toolchain/wrapper/arm-none-eabi-strip b/tools/cc_toolchain/wrapper/arm-none-eabi-strip
+index acaab1a..3040f47 100755
+--- a/tools/cc_toolchain/wrapper/arm-none-eabi-strip
++++ b/tools/cc_toolchain/wrapper/arm-none-eabi-strip
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/com_arm_developer_gcc/bin/arm-none-eabi-strip "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/com_arm_developer_gcc/bin/arm-none-eabi-strip "$@"
+diff --git a/tools/cc_toolchain/wrapper/clang-ar b/tools/cc_toolchain/wrapper/clang-ar
+index 6fa1002..64b35b5 100755
+--- a/tools/cc_toolchain/wrapper/clang-ar
++++ b/tools/cc_toolchain/wrapper/clang-ar
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/org_llvm_clang/bin/llvm-ar "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/org_llvm_clang/bin/llvm-ar "$@"
+diff --git a/tools/cc_toolchain/wrapper/clang-clang b/tools/cc_toolchain/wrapper/clang-clang
+index e88fcca..7e9cfbe 100755
+--- a/tools/cc_toolchain/wrapper/clang-clang
++++ b/tools/cc_toolchain/wrapper/clang-clang
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/org_llvm_clang/bin/clang "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/org_llvm_clang/bin/clang "$@"
+diff --git a/tools/cc_toolchain/wrapper/clang-cpp b/tools/cc_toolchain/wrapper/clang-cpp
+index 6eea3eb..c67dfdc 100755
+--- a/tools/cc_toolchain/wrapper/clang-cpp
++++ b/tools/cc_toolchain/wrapper/clang-cpp
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/org_llvm_clang/bin/clang-cpp "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/org_llvm_clang/bin/clang-cpp "$@"
+diff --git a/tools/cc_toolchain/wrapper/clang-dwp b/tools/cc_toolchain/wrapper/clang-dwp
+index 9b7d6d3..91e9999 100755
+--- a/tools/cc_toolchain/wrapper/clang-dwp
++++ b/tools/cc_toolchain/wrapper/clang-dwp
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/org_llvm_clang/bin/llvm-dwp "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/org_llvm_clang/bin/llvm-dwp "$@"
+diff --git a/tools/cc_toolchain/wrapper/clang-lld b/tools/cc_toolchain/wrapper/clang-lld
+index 9be28fa..97421fc 100755
+--- a/tools/cc_toolchain/wrapper/clang-lld
++++ b/tools/cc_toolchain/wrapper/clang-lld
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/org_llvm_clang/bin/lld "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/org_llvm_clang/bin/lld "$@"
+diff --git a/tools/cc_toolchain/wrapper/clang-nm b/tools/cc_toolchain/wrapper/clang-nm
+index 36264cb..c1df863 100755
+--- a/tools/cc_toolchain/wrapper/clang-nm
++++ b/tools/cc_toolchain/wrapper/clang-nm
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/org_llvm_clang/bin/llvm-nm "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/org_llvm_clang/bin/llvm-nm "$@"
+diff --git a/tools/cc_toolchain/wrapper/clang-objcopy b/tools/cc_toolchain/wrapper/clang-objcopy
+index 5383b06..7588590 100755
+--- a/tools/cc_toolchain/wrapper/clang-objcopy
++++ b/tools/cc_toolchain/wrapper/clang-objcopy
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/org_llvm_clang/bin/llvm-objcopy "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/org_llvm_clang/bin/llvm-objcopy "$@"
+diff --git a/tools/cc_toolchain/wrapper/clang-objdump b/tools/cc_toolchain/wrapper/clang-objdump
+index ced35dc..f0f3326 100755
+--- a/tools/cc_toolchain/wrapper/clang-objdump
++++ b/tools/cc_toolchain/wrapper/clang-objdump
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/org_llvm_clang/bin/llvm-objdump "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/org_llvm_clang/bin/llvm-objdump "$@"
+diff --git a/tools/cc_toolchain/wrapper/clang-strip b/tools/cc_toolchain/wrapper/clang-strip
+index 02ca3c1..b2a4013 100755
+--- a/tools/cc_toolchain/wrapper/clang-strip
++++ b/tools/cc_toolchain/wrapper/clang-strip
+@@ -14,4 +14,4 @@
+ # See the License for the specific language governing permissions and
+ # limitations under the License.
+ 
+-exec external/org_llvm_clang/bin/llvm-strip "$@"
++exec ${EXT_BUILD_ROOT:-.}/external/org_llvm_clang/bin/llvm-strip "$@"
