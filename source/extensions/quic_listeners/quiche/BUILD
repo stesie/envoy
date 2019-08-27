@@ -40,6 +40,7 @@ envoy_cc_library(
     srcs = ["envoy_quic_packet_writer.cc"],
     hdrs = ["envoy_quic_packet_writer.h"],
     external_deps = ["quiche_quic_platform"],
+    tags = ["skip_on_windows"],
     deps = [
         ":envoy_quic_utils_lib",
         "@com_googlesource_quiche//:quic_core_packet_writer_interface_lib",
@@ -72,6 +73,7 @@ envoy_cc_library(
     name = "spdy_server_push_utils_for_envoy_lib",
     srcs = ["spdy_server_push_utils_for_envoy.cc"],
     visibility = ["//visibility:public"],
+    tags = ["skip_on_windows"],
     deps = [
         "//source/common/common:assert_lib",
         "@com_googlesource_quiche//:quic_core_http_spdy_server_push_utils_header",
@@ -82,5 +84,6 @@ envoy_cc_library(
     name = "envoy_quic_utils_lib",
     hdrs = ["envoy_quic_utils.h"],
     external_deps = ["quiche_quic_platform"],
+    tags = ["skip_on_windows"],
     deps = ["//source/common/network:address_lib"],
 )
