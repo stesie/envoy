@@ -104,7 +104,7 @@ def envoy_cmake_external(
         cmake_options = cmake_options,
         generate_crosstool_file = select({
             "@envoy//bazel:windows_x86_64": True,
-            "//conditions:default": False,
+            "//conditions:default": True,
         }),
         lib_source = lib_source,
         make_commands = make_commands,
