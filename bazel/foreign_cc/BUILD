@@ -68,12 +68,9 @@ envoy_cmake_external(
     # Options from https://github.com/curl/curl/blob/master/CMakeLists.txt.
     cache_entries = {
         "BUILD_CURL_EXE": "off",
-        "BUILD_SHARED_LIBS": "off",
-        "CURL_STATIC_CRT": "on",
-        "CMAKE_BUILD_TYPE": "RelWithDebInfo",
-        "HTTP_ONLY": "on",
         "BUILD_TESTING": "off",
         "BUILD_SHARED_LIBS": "off",
+        "CURL_STATIC_CRT": "on",
         "CURL_HIDDEN_SYMBOLS": "off",
         "CMAKE_USE_LIBSSH2": "off",
         "CURL_BROTLI": "off",
