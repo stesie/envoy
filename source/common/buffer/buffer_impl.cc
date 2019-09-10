@@ -541,7 +541,6 @@ Api::IoCallUint64Result OwnedImpl::write(Network::IoHandle& io_handle) {
   const uint64_t num_slices = std::min(getRawSlices(slices, MaxSlices), MaxSlices);
   Api::IoCallUint64Result result = io_handle.writev(slices, num_slices);
   if (result.ok() && result.rc_ > 0) {
-#endif
     drain(static_cast<uint64_t>(result.rc_));
   }
   return result;

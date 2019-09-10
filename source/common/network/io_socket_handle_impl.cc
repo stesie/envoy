@@ -107,8 +107,13 @@ Api::IoCallUint64Result IoSocketHandleImpl::sendto(const Buffer::RawSlice& slice
   sockaddr* sock_addr = const_cast<sockaddr*>(address_base->sockAddr());
 
   auto& os_syscalls = Api::OsSysCallsSingleton::get();
+#ifdef WIN32
+  const Api::SysCallSizeResult result = os_syscalls.sendto(socket_descriptor_, slice.mem_, slice.len_, flags,
+                                                           sock_addr, address_base->sockAddrLen());
+#else
   const Api::SysCallSizeResult result = os_syscalls.sendto(fd_, slice.mem_, slice.len_, flags,
                                                            sock_addr, address_base->sockAddrLen());
+#endif
   return sysCallResultToIoCallResult(result);
 }
 
@@ -119,7 +124,7 @@ Api::IoCallUint64Result IoSocketHandleImpl::sendmsg(const Buffer::RawSlice* slic
   const auto* address_base = dynamic_cast<const Address::InstanceBase*>(&peer_address);
   sockaddr* sock_addr = const_cast<sockaddr*>(address_base->sockAddr());
 
-  STACK_ARRAY(iov, iovec, num_slice);
+  STACK_ARRAY(iov, IOVEC, num_slice);
   uint64_t num_slices_to_write = 0;
   for (uint64_t i = 0; i < num_slice; i++) {
     if (slices[i].mem_ != nullptr && slices[i].len_ != 0) {

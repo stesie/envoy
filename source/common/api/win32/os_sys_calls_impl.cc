@@ -64,6 +64,12 @@ SysCallSizeResult OsSysCallsImpl::recv(SOCKET_FD socket, void* buffer, size_t le
   return {rc, ::WSAGetLastError()};
 }
 
+SysCallSizeResult OsSysCallsImpl::recvfrom(SOCKET_FD sockfd, void* buffer, size_t length, int flags,
+                                           struct sockaddr* addr, socklen_t* addrlen) {
+  const ssize_t rc = ::recvfrom(sockfd, static_cast<char*>(buffer), length, flags, addr, addrlen);
+  return {rc, ::WSAGetLastError()};
+}
+
 // TODO Pivotal - copied from https://github.com/pauldotknopf/WindowsSDK7-Samples/blob/master/netds/winsock/recvmsg/rmmc.cpp
 // look into the licensing
 LPFN_WSARECVMSG GetWSARecvMsgFunctionPointer()
@@ -113,14 +119,6 @@ SysCallSizeResult OsSysCallsImpl::recvmsg(SOCKET_FD sockfd, LPWSAMSG msg, int fl
 SysCallIntResult OsSysCallsImpl::close(SOCKET_FD fd) {
   const int rc = ::closesocket(fd);
   return {rc, ::WSAGetLastError()};
-}
-
-SysCallIntResult OsSysCallsImpl::shmOpen(const char* name, int oflag, mode_t mode) {
-  PANIC("shmOpen not implemented on Windows");
-}
-
-SysCallIntResult OsSysCallsImpl::shmUnlink(const char* name) {
-  PANIC("shmUnlink not implemented on Windows");
 }
 
 SysCallIntResult OsSysCallsImpl::ftruncate(int fd, off_t length) {
