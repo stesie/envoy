@@ -14,6 +14,7 @@ envoy_package()
 envoy_cc_test_binary(
     name = "router_check_tool",
     srcs = ["router_check.cc"],
+    tags = ["skip_on_windows"],
     deps = [":router_check_main_lib"] + envoy_cc_platform_dep("//source/exe:platform_impl_lib"),
 )
 
