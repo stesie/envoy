@@ -1239,12 +1239,15 @@ ClusterManagerImpl::ThreadLocalClusterManagerImpl::ClusterEntry::connPool(
   std::vector<uint8_t> hash_key = {uint8_t(protocol)};
 
   Network::Socket::OptionsSharedPtr upstream_options(std::make_shared<Network::Socket::Options>());
+  Network::TransportSocketOptionsSharedPtr upstream_transport_socket_options;
   if (context) {
     // Inherit socket options from downstream connection, if set.
     if (context->downstreamConnection()) {
       addOptionsIfNotNull(upstream_options, context->downstreamConnection()->socketOptions());
     }
     addOptionsIfNotNull(upstream_options, context->upstreamSocketOptions());
+
+    upstream_transport_socket_options = context->upstreamTransportSocketOptions();
   }
 
   // Use the socket options for computing connection pool hash key, if any.
@@ -1262,7 +1265,8 @@ ClusterManagerImpl::ThreadLocalClusterManagerImpl::ClusterEntry::connPool(
       container.pools_->getPool(priority, hash_key, [&]() {
         return parent_.parent_.factory_.allocateConnPool(
             parent_.thread_local_dispatcher_, host, priority, protocol,
-            !upstream_options->empty() ? upstream_options : nullptr);
+            !upstream_options->empty() ? upstream_options : nullptr,
+            upstream_transport_socket_options);
       });
 
   if (pool.has_value()) {
@@ -1326,21 +1330,22 @@ ClusterManagerPtr ProdClusterManagerFactory::clusterManagerFromProto(
 
 Http::ConnectionPool::InstancePtr ProdClusterManagerFactory::allocateConnPool(
     Event::Dispatcher& dispatcher, HostConstSharedPtr host, ResourcePriority priority,
-    Http::Protocol protocol, const Network::ConnectionSocket::OptionsSharedPtr& options) {
+    Http::Protocol protocol, const Network::ConnectionSocket::OptionsSharedPtr& options,
+    const Network::TransportSocketOptionsSharedPtr& transport_socket_options) {
   if (protocol == Http::Protocol::Http2 &&
       runtime_.snapshot().featureEnabled("upstream.use_http2", 100)) {
-    return Http::ConnectionPool::InstancePtr{
-        new Http::Http2::ProdConnPoolImpl(dispatcher, host, priority, options)};
+    return std::make_unique<Http::Http2::ProdConnPoolImpl>(dispatcher, host, priority, options,
+                                                           transport_socket_options);
   } else {
-    return Http::ConnectionPool::InstancePtr{
-        new Http::Http1::ProdConnPoolImpl(dispatcher, host, priority, options)};
+    return std::make_unique<Http::Http1::ProdConnPoolImpl>(dispatcher, host, priority, options,
+                                                           transport_socket_options);
   }
 }
 
 Tcp::ConnectionPool::InstancePtr ProdClusterManagerFactory::allocateTcpConnPool(
     Event::Dispatcher& dispatcher, HostConstSharedPtr host, ResourcePriority priority,
     const Network::ConnectionSocket::OptionsSharedPtr& options,
-    Network::TransportSocketOptionsSharedPtr transport_socket_options) {
+    const Network::TransportSocketOptionsSharedPtr& transport_socket_options) {
   return Tcp::ConnectionPool::InstancePtr{
       new Tcp::ConnPoolImpl(dispatcher, host, priority, options, transport_socket_options)};
 }

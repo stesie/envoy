@@ -24,6 +24,7 @@
 #include "common/http/headers.h"
 #include "common/http/message_impl.h"
 #include "common/http/utility.h"
+#include "common/network/transport_socket_options_impl.h"
 #include "common/router/config_impl.h"
 #include "common/router/debug_config.h"
 #include "common/router/retry_state_impl.h"
@@ -539,6 +540,12 @@ Http::ConnectionPool::Instance* Filter::getConnPool() {
   } else {
     protocol = (features & Upstream::ClusterInfo::Features::HTTP2) ? Http::Protocol::Http2
                                                                    : Http::Protocol::Http11;
+  }
+
+  if (features & Upstream::ClusterInfo::Features::USE_AUTHORITY_AS_REQUEST_SERVER_NAME &&
+      downstream_headers_ != nullptr) {
+    upstream_transport_socket_options_ = std::make_shared<Network::TransportSocketOptionsImpl>(
+        downstream_headers_->Host()->value().getStringView());
   }
   return config_.cm_.httpConnPoolForCluster(route_entry_->clusterName(), route_entry_->priority(),
                                             protocol, this);

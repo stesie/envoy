@@ -82,14 +82,15 @@ public:
 
   Http::ConnectionPool::InstancePtr
   allocateConnPool(Event::Dispatcher&, HostConstSharedPtr host, ResourcePriority, Http::Protocol,
-                   const Network::ConnectionSocket::OptionsSharedPtr& options) override {
+                   const Network::ConnectionSocket::OptionsSharedPtr& options,
+                   const Network::TransportSocketOptionsSharedPtr&) override {
     return Http::ConnectionPool::InstancePtr{allocateConnPool_(host, options)};
   }
 
   Tcp::ConnectionPool::InstancePtr
   allocateTcpConnPool(Event::Dispatcher&, HostConstSharedPtr host, ResourcePriority,
                       const Network::ConnectionSocket::OptionsSharedPtr&,
-                      Network::TransportSocketOptionsSharedPtr) override {
+                      const Network::TransportSocketOptionsSharedPtr&) override {
     return Tcp::ConnectionPool::InstancePtr{allocateTcpConnPool_(host)};
   }
 

@@ -290,6 +290,9 @@ public:
     return callbacks_->connection();
   }
   const Http::HeaderMap* downstreamHeaders() const override { return downstream_headers_; }
+  Network::TransportSocketOptionsSharedPtr upstreamTransportSocketOptions() const override {
+    return upstream_transport_socket_options_;
+  }
 
   bool shouldSelectAnotherHost(const Upstream::Host& host) override {
     // We only care about host selection when performing a retry, at which point we consult the
@@ -564,6 +567,7 @@ private:
   uint32_t buffer_limit_{0};
   MetadataMatchCriteriaConstPtr metadata_match_;
   std::function<void(Http::HeaderMap&)> modify_headers_;
+  Network::TransportSocketOptionsSharedPtr upstream_transport_socket_options_;
 
   // list of cookies to add to upstream headers
   std::vector<std::string> downstream_set_cookies_;

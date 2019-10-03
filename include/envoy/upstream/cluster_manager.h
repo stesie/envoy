@@ -275,17 +275,17 @@ public:
   virtual Http::ConnectionPool::InstancePtr
   allocateConnPool(Event::Dispatcher& dispatcher, HostConstSharedPtr host,
                    ResourcePriority priority, Http::Protocol protocol,
-                   const Network::ConnectionSocket::OptionsSharedPtr& options) PURE;
+                   const Network::ConnectionSocket::OptionsSharedPtr& options,
+                   const Network::TransportSocketOptionsSharedPtr& transport_socket_options) PURE;
 
   /**
    * Allocate a TCP connection pool for the host. Pools are separated by 'priority' and
    * 'options->hashKey()', if any.
    */
-  virtual Tcp::ConnectionPool::InstancePtr
-  allocateTcpConnPool(Event::Dispatcher& dispatcher, HostConstSharedPtr host,
-                      ResourcePriority priority,
-                      const Network::ConnectionSocket::OptionsSharedPtr& options,
-                      Network::TransportSocketOptionsSharedPtr transport_socket_options) PURE;
+  virtual Tcp::ConnectionPool::InstancePtr allocateTcpConnPool(
+      Event::Dispatcher& dispatcher, HostConstSharedPtr host, ResourcePriority priority,
+      const Network::ConnectionSocket::OptionsSharedPtr& options,
+      const Network::TransportSocketOptionsSharedPtr& transport_socket_options) PURE;
 
   /**
    * Allocate a cluster from configuration proto.

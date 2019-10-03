@@ -662,6 +662,8 @@ public:
     static const uint64_t USE_DOWNSTREAM_PROTOCOL = 0x2;
     // Whether connections should be immediately closed upon health failure.
     static const uint64_t CLOSE_CONNECTIONS_ON_HOST_HEALTH_FAILURE = 0x4;
+    // Use :authority / host header for upstream server name (SNI).
+    static const uint64_t USE_AUTHORITY_AS_REQUEST_SERVER_NAME = 0x8;
   };
 
   virtual ~ClusterInfo() = default;

@@ -251,16 +251,19 @@ public:
   MOCK_METHOD1(clusterManagerFromProto,
                ClusterManagerPtr(const envoy::config::bootstrap::v2::Bootstrap& bootstrap));
 
-  MOCK_METHOD5(allocateConnPool, Http::ConnectionPool::InstancePtr(
-                                     Event::Dispatcher& dispatcher, HostConstSharedPtr host,
-                                     ResourcePriority priority, Http::Protocol protocol,
-                                     const Network::ConnectionSocket::OptionsSharedPtr& options));
+  MOCK_METHOD6(allocateConnPool,
+               Http::ConnectionPool::InstancePtr(
+                   Event::Dispatcher& dispatcher, HostConstSharedPtr host,
+                   ResourcePriority priority, Http::Protocol protocol,
+                   const Network::ConnectionSocket::OptionsSharedPtr& options,
+                   const Network::TransportSocketOptionsSharedPtr& transport_socket_options));
 
-  MOCK_METHOD5(allocateTcpConnPool, Tcp::ConnectionPool::InstancePtr(
-                                        Event::Dispatcher& dispatcher, HostConstSharedPtr host,
-                                        ResourcePriority priority,
-                                        const Network::ConnectionSocket::OptionsSharedPtr& options,
-                                        Network::TransportSocketOptionsSharedPtr));
+  MOCK_METHOD5(allocateTcpConnPool,
+               Tcp::ConnectionPool::InstancePtr(
+                   Event::Dispatcher& dispatcher, HostConstSharedPtr host,
+                   ResourcePriority priority,
+                   const Network::ConnectionSocket::OptionsSharedPtr& options,
+                   const Network::TransportSocketOptionsSharedPtr& transport_socket_options));
 
   MOCK_METHOD4(clusterFromProto,
                std::pair<ClusterSharedPtr, ThreadAwareLoadBalancerPtr>(
