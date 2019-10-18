@@ -165,8 +165,11 @@ public:
     if (is_hash_lb_) {
       EXPECT_EQ(hosts.size(), 1) << "Expected a single unique host to be selected for "
                                  << envoy::api::v2::Cluster_LbPolicy_Name(GetParam());
-    } else {
+    } else if (GetParam() == envoy::api::v2::Cluster_LbPolicy_ROUND_ROBIN) {
       EXPECT_GT(hosts.size(), 1) << "Expected multiple hosts to be selected for "
+                                 << envoy::api::v2::Cluster_LbPolicy_Name(GetParam());
+    } else {
+      EXPECT_GE(hosts.size(), 1) << "Expected one or more hosts to be selected for "
                                  << envoy::api::v2::Cluster_LbPolicy_Name(GetParam());
     }
   }
